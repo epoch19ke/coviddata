@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Global Archive | Epoch19</title>
+    
+    <!-- PWA Manifest & Meta -->
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" type="image/svg+xml" href="./assets/images/favicon.svg">
+    <meta name="theme-color" content="#1e293b">
+    
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@800&family=Playfair+Display:ital,wght@0,600;1,600&family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    
+    <!-- Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+    <style>
+        :root {
+            /* Theme Variables */
+            --bg-body: #0f172a;       
+            --bg-glass: rgba(30, 41, 59, 0.85); /* Slightly less transparent for readability */
+            --text-main: #F1F5F9;     
+            --text-muted: #94A3B8; 
+            
+            --primary-base: #7C3AED;  
+            --primary-light: #A78BFA; 
+            --primary-gradient: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%);
+            
+            --success: #10B981;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+            --gold: #F59E0B;
+            
+            --sidebar-width: 260px; 
+            --header-height: 70px;
+            --radius: 16px;
+            
+            /* Fonts */
+            --font-head: 'Cinzel', serif;
+            --font-body: 'Inter', sans-serif;
+            --font-display: 'Space Grotesk', sans-serif;
+            --font-mono: 'Space Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            font-family: var(--font-body); 
+            background-color: var(--bg-body); 
+            background: url('./assets/images/background.png') no-repeat center center fixed;
+            background-size: cover;
+            color: var(--text-main); 
+            min-height: 100vh; 
+            overflow-x: hidden;
+            display: flex; flex-direction: column;
+        }
+
+        /* --- HEADER --- */
+        header {
+            position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height);
+            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 24px; z-index: 1000;
+        }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        
+        .logo { 
+            font-family: var(--font-head); font-weight: 700; color: #ffffff; 
+            font-size: 1.5rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; 
+        }
+        .logo span { color: var(--primary-light); font-weight: 700; }
+        .user-badge {
+            background: rgba(255, 255, 255, 0.05); color: var(--text-muted);
+            padding: 2px 8px; border-radius: 4px; font-size: 0.6rem;
+            font-weight: 700; text-transform: uppercase; margin-left: 5px; vertical-align: middle;
+            font-family: var(--font-body); border: 1px solid rgba(255,255,255,0.1);
+        }
+        .user-avatar { width: 42px; height: 42px; border-radius: 12px; background: var(--primary-gradient); display: grid; place-items: center; font-weight: 700; color: #fff; cursor: pointer; }
+
+        /* --- SIDEBAR --- */
+        .sidebar { 
+            position: fixed; top: var(--header-height); left: 0; 
+            width: var(--sidebar-width); height: calc(100vh - var(--header-height)); 
+            background: rgba(15, 23, 42, 0.95); border-right: 1px solid rgba(255,255,255,0.05); 
+            padding: 20px 0; overflow-y: auto; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            z-index: 999; display: flex; flex-direction: column; backdrop-filter: blur(20px); 
+            transform: translateX(0); 
+        }
+        
+        main { 
+            margin-left: var(--sidebar-width); margin-top: var(--header-height); 
+            padding: 25px; width: calc(100% - var(--sidebar-width)); flex: 1; 
+            transition: all 0.3s ease; max-width: 1600px;
+            display: flex; flex-direction: column; gap: 20px;
+        }
+
+        .hamburger { font-size: 1.4rem; cursor: pointer; color: var(--text-muted); display: none; }
+        
+        .nav-group { padding: 0 24px; margin-bottom: 20px; }
+        .nav-label { font-size: 0.7rem; text-transform: uppercase; color: var(--primary-base); font-weight: 700; margin-bottom: 8px; }
+        .nav-item { display: flex; align-items: center; padding: 12px 14px; color: var(--text-muted); text-decoration: none; font-size: 0.9rem; border-radius: 10px; margin-bottom: 4px; transition: 0.2s; }
+        .nav-item:hover { color: var(--text-main); background: rgba(255,255,255,0.05); transform: translateX(5px); }
+        .nav-item.active { background: linear-gradient(90deg, rgba(124, 58, 237, 0.15) 0%, transparent 100%); color: var(--primary-light); font-weight: 600; border-left: 3px solid var(--primary-base); }
+        .nav-item i { width: 25px; text-align: center; margin-right: 10px; }
+
+        @media (max-width: 1024px) {
+            .sidebar { transform: translateX(-100%); width: 280px; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
+            .sidebar.active { transform: translateX(0); }
+            main { margin-left: 0; width: 100%; padding: 15px; }
+            .hamburger { display: block; }
+        }
+
+        /* --- TOOLBAR --- */
+        .toolbar {
+            background: var(--bg-glass); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05);
+            padding: 1.5rem; border-radius: var(--radius); display: flex; flex-direction: column; gap: 1rem;
+        }
+
+        .toolbar-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+
+        .search-box { position: relative; width: 350px; max-width: 100%; }
+        .search-box i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.1rem; }
+        
+        .search-input, .filter-input, .filter-select {
+            width: 100%; padding: 12px 14px;
+            background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px; color: #fff; outline: none; transition: 0.3s;
+            font-family: var(--font-body); font-size: 0.9rem;
+        }
+        .search-input { padding-left: 45px; }
+        .search-input:focus, .filter-input:focus, .filter-select:focus { border-color: var(--primary-light); box-shadow: 0 0 10px rgba(124, 58, 237, 0.2); }
+        
+        .filter-select option { background: #0f172a; color: #fff; }
+
+        .toolbar-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .btn-tool {
+            padding: 10px 18px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05); color: var(--text-main);
+            cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.85rem;
+            transition: 0.3s; font-weight: 600;
+        }
+        .btn-tool:hover { background: var(--primary-base); border-color: var(--primary-base); color: #fff; }
+        .btn-hidden { display: none; }
+        .premium-tag {
+            color: var(--gold); display: flex; align-items: center; gap: 6px; 
+            font-size: 0.85rem; font-weight: 700; font-family: var(--font-mono);
+            background: rgba(245, 158, 11, 0.1); padding: 8px 14px; border-radius: 8px;
+            border: 1px solid rgba(245, 158, 11, 0.3); letter-spacing: 0.5px;
+        }
+
+        /* --- ADVANCED TABLE (High Performance) --- */
+        .table-container {
+            position: relative;
+            background: var(--bg-glass); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05);
+            border-radius: var(--radius); overflow: hidden; 
+            display: flex; flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .table-scroll { 
+            overflow-x: auto; width: 100%;
+        }
+
+        .data-table { 
+            width: 100%; min-width: 900px; border-collapse: separate; 
+            border-spacing: 0; text-align: left; 
+        }
+
+        /* Table Header */
+        .data-table thead th {
+            position: sticky; top: 0; z-index: 10;
+            background: #151e32; /* Solid dark background for sticky header */
+            padding: 18px 24px;
+            font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px;
+            color: var(--text-muted); border-bottom: 2px solid var(--primary-base);
+            cursor: pointer; transition: color 0.2s; white-space: nowrap;
+        }
+        .data-table thead th:hover { color: #fff; }
+        .data-table thead th i { margin-left: 5px; opacity: 0.5; }
+
+        /* Table Body */
+        .data-table tbody tr { transition: background 0.2s; }
+        .data-table tbody tr:nth-child(even) { background: rgba(255,255,255,0.01); }
+        .data-table tbody tr:hover { background: rgba(124, 58, 237, 0.08); transform: scale(1.002); }
+        
+        .data-table td { 
+            padding: 16px 24px; 
+            font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-main); 
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            white-space: nowrap;
+        }
+
+        /* Data Visualization Cells */
+        .cell-country { font-family: var(--font-body); font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px; }
+        .flag-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary-light); display: inline-block; }
+        
+        .val-deaths { color: #FCA5A5; font-weight: 600; }
+        .val-success { color: #6EE7B7; font-weight: 600; }
+        .val-serious { color: #FCD34D; }
+
+        .status-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 6px; }
+        .status-serious { background-color: var(--warning); box-shadow: 0 0 5px var(--warning); }
+        .status-safe { background-color: var(--success); }
+
+        /* Pagination Controls */
+        .pagination-bar {
+            padding: 15px 24px; background: rgba(0,0,0,0.2); border-top: 1px solid rgba(255,255,255,0.05);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .page-btn {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-main); padding: 8px 16px; border-radius: 8px;
+            cursor: pointer; font-size: 0.85rem; transition: 0.3s;
+        }
+        .page-btn:hover:not(:disabled) { background: var(--primary-base); border-color: var(--primary-base); }
+        .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .page-info { font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted); }
+
+        /* Paywall & Loader */
+        .paywall-lock {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 350px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 20; background: linear-gradient(to top, #0f172a 10%, rgba(15,23,42,0.8));
+            backdrop-filter: blur(4px); pointer-events: all;
+        }
+        .btn-unlock {
+            background: linear-gradient(135deg, var(--gold), #d97706);
+            color: #fff; padding: 14px 35px; border-radius: 30px; border: none;
+            font-weight: 700; cursor: pointer; margin-top: 15px; 
+            box-shadow: 0 10px 30px rgba(245, 158, 11, 0.2); transition: 0.3s;
+        }
+        .btn-unlock:hover { transform: scale(1.05); }
+
+        .loader-overlay {
+            position: fixed; inset: 0; background: #0f172a; z-index: 9999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            transition: opacity 0.5s ease;
+        }
+        .spinner-ring { width: 50px; height: 50px; border: 4px solid rgba(124, 58, 237, 0.2); border-top-color: var(--primary-base); border-radius: 50%; animation: spin 1s infinite linear; }
+        
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        
+        /* Footer */
+        footer { margin-top: auto; border-top: 1px solid rgba(255,255,255,0.05); padding: 2.5rem; text-align: center; }
+        .footer-socials { display: flex; gap: 20px; justify-content: center; margin-bottom: 1rem; }
+        .footer-socials a { color: var(--text-muted); font-size: 1.5rem; transition: 0.3s; }
+        .footer-socials a:hover { color: var(--primary-light); }
+
+        @media(max-width: 768px) {
+            .toolbar-top, .toolbar-actions { flex-direction: column; align-items: stretch; }
+            .btn-tool, .search-box { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- PRELOADER -->
+    <div id="global-loader" class="loader-overlay">
+        <div class="spinner-ring"></div>
+        <div style="margin-top: 15px; font-family: 'Space Mono', monospace; color: #A78BFA; letter-spacing: 2px;">LOADING ARCHIVE...</div>
+    </div>
+
+    <!-- HEADER -->
+    <header>
+        <div class="header-left">
+            <i class="fas fa-bars hamburger" onclick="toggleSidebar()"></i>
+            <a href="dashboard.html" class="logo">EPOCH<span>19</span> <span class="user-badge">ARCHIVE</span></a>
+        </div>
+        <div class="header-actions">
+            <div class="user-avatar" id="header-avatar-fallback" onclick="location.href='settings.html'">U</div>
+        </div>
+    </header>
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar" id="sidebar">
+        <div class="nav-group">
+            <div class="nav-label">Navigation</div>
+            <a href="dashboard.html" class="nav-item"><i class="fa-solid fa-grid-2"></i> Dashboard</a>
+            <a href="database.html" class="nav-item active"><i class="fa-solid fa-database"></i> Data Archive</a>
+            <a href="resources.html" class="nav-item"><i class="fa-solid fa-newspaper"></i> Resources</a>
+        </div>
+        <div class="nav-group">
+            <div class="nav-label">Account</div>
+            <a href="settings.html" class="nav-item"><i class="fa-solid fa-gear"></i> Settings</a>
+            <a href="upgrade.html" class="nav-item" style="color: var(--gold);"><i class="fa-solid fa-crown"></i> Upgrade</a>
+            <a href="#" onclick="logout()" class="nav-item" style="color:var(--danger); margin-top:10px;"><i class="fa-solid fa-power-off"></i> Logout</a>
+        </div>
+    </nav>
+    <div class="overlay" id="overlay" onclick="closeSidebar()" style="position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:998; display:none;"></div>
+
+    <!-- MAIN CONTENT -->
+    <main>
+        
+        <!-- TOOLBAR -->
+        <div class="toolbar animate__animated animate__fadeInDown">
+            <div class="toolbar-top">
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" class="search-input" id="table-search" placeholder="Search Country or Date..." disabled>
+                </div>
+                
+                <div class="toolbar-actions">
+                    <div id="premium-badge" class="premium-tag" style="display:none;">
+                        <i class="fa-solid fa-circle-check"></i> UNLOCKED
+                    </div>
+                    <button class="btn-tool btn-hidden" id="btn-export-pdf"><i class="fa-solid fa-file-pdf"></i> PDF Export</button>
+                    <button class="btn-tool btn-hidden" id="btn-export-csv"><i class="fa-solid fa-file-csv"></i> CSV Export</button>
+                    <button class="btn-tool btn-hidden" id="btn-reset-filters"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+                </div>
+            </div>
+            
+            <!-- Filters (Hidden by Default) -->
+            <div class="filter-grid" id="advanced-filters" style="display:none; opacity: 0.5;">
+                <input type="text" class="filter-input" id="filter-date-start" placeholder="Start (DD/MM/YYYY)" disabled>
+                <input type="text" class="filter-input" id="filter-date-end" placeholder="End (DD/MM/YYYY)" disabled>
+                <select class="filter-select" id="filter-country" disabled><option value="">All Countries</option></select>
+                <input type="number" class="filter-input" id="filter-min-cases" placeholder="Min Cases" disabled>
+                <input type="number" class="filter-input" id="filter-min-deaths" placeholder="Min Deaths" disabled>
+            </div>
+        </div>
+
+        <!-- DATA TABLE -->
+        <div class="table-container animate__animated animate__fadeInUp" id="table-wrapper">
+            
+            <!-- Paywall Overlay -->
+            <div class="paywall-lock" id="paywall-overlay" style="display: none;">
+                <i class="fa-solid fa-lock" style="font-size: 3rem; color: var(--gold); margin-bottom: 15px;"></i>
+                <h3 style="color: white; font-family: var(--font-display);">Restricted Access</h3>
+                <p style="color: var(--text-muted); margin-bottom: 20px;">Upgrade required for full history.</p>
+                <button class="btn-unlock" onclick="window.location.href='upgrade.html'">Unlock Access ($5)</button>
+            </div>
+
+            <div class="table-scroll">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th data-sort="Date">Date <i class="fa-solid fa-sort"></i></th>
+                            <th data-sort="Country">Country <i class="fa-solid fa-sort"></i></th>
+                            <th data-sort="Cases">Total Cases <i class="fa-solid fa-sort"></i></th>
+                            <th data-sort="Deaths">Deaths <i class="fa-solid fa-sort"></i></th>
+                            <th data-sort="Recovered">Recovered <i class="fa-solid fa-sort"></i></th>
+                            <th data-sort="Mild">Mild Cases <i class="fa-solid fa-sort"></i></th>
+                            <th data-sort="Serious">Serious <i class="fa-solid fa-sort"></i></th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        <!-- Rows injected via JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination Bar -->
+            <div class="pagination-bar" id="pagination-controls" style="display:none;">
+                <div class="page-info">Showing <span id="page-start">0</span> - <span id="page-end">0</span> of <span id="total-rows">0</span></div>
+                <div style="display:flex; gap:10px;">
+                    <button class="page-btn" id="btn-prev" disabled><i class="fa-solid fa-chevron-left"></i> Prev</button>
+                    <button class="page-btn" id="btn-next" disabled>Next <i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-socials">
+            <a id="link-email" href="#"><i class="fa-regular fa-envelope"></i></a>
+            <a id="link-whatsapp" href="#"><i class="fa-brands fa-whatsapp"></i></a>
+        </div>
+        <div style="font-family: var(--font-mono); opacity: 0.6; font-size: 0.8rem;">Epoch19 Data Archive &copy; 2025</div>
+    </footer>
+
+    <!-- PWA POPUP -->
+    <div id="pwa-install-popup" style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: #1e293b; border: 1px solid var(--primary-base); border-radius: 20px; padding: 20px; z-index: 3000;">
+        <div style="display:flex; gap:15px; align-items:center; margin-bottom:15px;">
+            <div style="width:50px; height:50px; border-radius:12px; background:var(--primary-gradient); display:grid; place-items:center; color:#fff; font-size:1.5rem;"><i class="fas fa-globe"></i></div>
+            <div><div style="font-weight:700; color:#fff;">Epoch19 Archive</div><div style="font-size:0.8rem; color:#94A3B8;">Install app for offline access.</div></div>
+        </div>
+        <div style="display:flex; gap:10px;">
+            <button onclick="installPWA()" style="flex:2; padding:10px; background:var(--primary-gradient); border:none; border-radius:10px; color:#fff; font-weight:700;">Install</button>
+            <button onclick="dismissPWA()" style="flex:1; padding:10px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.1); border-radius:10px; color:#94A3B8;">Later</button>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script type="module">
+        import { auth, db } from './firebase-config.js';
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+        import { collection, query, limit, orderBy, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+
+        // State Variables
+        let allData = [];      // Stores all fetched data
+        let displayData = [];  // Stores filtered/sorted data
+        let currentPage = 1;
+        const rowsPerPage = 20; // Limits DOM nodes for performance
+        let isPremium = false;
+        let sortDir = 1;
+
+        // UI Helpers
+        window.toggleSidebar = () => { document.getElementById('sidebar').classList.toggle('active'); document.getElementById('overlay').style.display = 'block'; };
+        window.closeSidebar = () => { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').style.display = 'none'; };
+        window.logout = () => signOut(auth).then(() => window.location.href = "index.html");
+
+        // 1. Auth & Init
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = "login.html";
+            } else {
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if (userDoc.exists()) {
+                    const d = userDoc.data();
+                    isPremium = d.status === 'premium' || d.role === 'admin';
+                    document.getElementById('header-avatar-fallback').innerText = (d.fullName||'U').charAt(0).toUpperCase();
+
+                    setupUI();
+                    loadData();
+                    loadFooter();
+                }
+            }
+        });
+
+        // 2. UI Setup
+        function setupUI() {
+            const els = {
+                search: document.getElementById('table-search'),
+                btnPdf: document.getElementById('btn-export-pdf'),
+                btnCsv: document.getElementById('btn-export-csv'),
+                btnReset: document.getElementById('btn-reset-filters'),
+                filters: document.getElementById('advanced-filters'),
+                pagination: document.getElementById('pagination-controls')
+            };
+
+            if (isPremium) {
+                document.getElementById('premium-badge').style.display = 'flex';
+                els.filters.style.display = 'grid';
+                els.filters.style.opacity = '1';
+                els.pagination.style.display = 'flex';
+                
+                [els.search, els.btnPdf, els.btnCsv, els.btnReset].forEach(el => el.classList.remove('btn-hidden'));
+                
+                document.querySelectorAll('input, select').forEach(el => el.disabled = false);
+
+                // Listeners
+                const inputs = document.querySelectorAll('.filter-input, .search-input, .filter-select');
+                inputs.forEach(i => i.addEventListener('input', () => { currentPage = 1; applyFilters(); }));
+                
+                els.btnPdf.addEventListener('click', exportPDF);
+                els.btnCsv.addEventListener('click', exportCSV);
+                els.btnReset.addEventListener('click', resetFilters);
+                
+                document.getElementById('btn-prev').addEventListener('click', () => changePage(-1));
+                document.getElementById('btn-next').addEventListener('click', () => changePage(1));
+                
+                document.querySelectorAll('th[data-sort]').forEach(th => {
+                    th.addEventListener('click', () => sortData(th.getAttribute('data-sort')));
+                });
+            }
+        }
+
+        // 3. Data Loading (Efficient Fetch)
+        async function loadData() {
+            try {
+                // If Premium: Load large dataset (capped query or careful fetch)
+                // If Free: Limit 15
+                let q = isPremium 
+                    ? query(collection(db, "covid_data"), orderBy("Date", "desc")) 
+                    : query(collection(db, "covid_data"), limit(15));
+                
+                const snap = await getDocs(q);
+                allData = [];
+                const countrySet = new Set();
+
+                snap.forEach(d => {
+                    const item = d.data();
+                    allData.push(item);
+                    if(item.Country) countrySet.add(item.Country);
+                });
+
+                // Populate Country Filter
+                if(isPremium) {
+                    const sel = document.getElementById('filter-country');
+                    Array.from(countrySet).sort().forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c; opt.innerText = c;
+                        sel.appendChild(opt);
+                    });
+                }
+
+                displayData = [...allData];
+                
+                // Remove loader
+                const loader = document.getElementById('global-loader');
+                loader.style.opacity = '0';
+                setTimeout(() => loader.style.display = 'none', 500);
+
+                if(!isPremium) {
+                    document.getElementById('paywall-overlay').style.display = 'flex';
+                }
+
+                renderTable();
+
+            } catch (e) {
+                console.error(e);
+                Swal.fire({icon: 'error', title: 'Data Error', text: 'Could not retrieve archive.', background:'#0f172a', color:'#fff'});
+            }
+        }
+
+        // 4. Filtering Logic
+        function applyFilters() {
+            const search = document.getElementById('table-search').value.toLowerCase();
+            const country = document.getElementById('filter-country').value;
+            const minCases = Number(document.getElementById('filter-min-cases').value) || 0;
+            
+            displayData = allData.filter(row => {
+                const matchSearch = !search || (row.Country && row.Country.toLowerCase().includes(search)) || (row.Date && row.Date.includes(search));
+                const matchCountry = !country || row.Country === country;
+                const matchCases = (Number(row.Cases) || 0) >= minCases;
+                return matchSearch && matchCountry && matchCases;
+            });
+            
+            renderTable();
+        }
+
+        // 5. Sorting
+        function sortData(col) {
+            sortDir *= -1;
+            displayData.sort((a,b) => {
+                let valA = a[col], valB = b[col];
+                
+                if(['Cases','Deaths','Recovered','Mild','Serious'].includes(col)) {
+                    valA = Number(valA)||0; valB = Number(valB)||0;
+                } else if(col === 'Date') {
+                    const toTime = d => { if(!d)return 0; const[dd,mm,yy]=d.split('/'); return new Date(`${yy}-${mm}-${dd}`).getTime(); };
+                    valA = toTime(valA); valB = toTime(valB);
+                }
+                
+                if(valA < valB) return -1 * sortDir;
+                if(valA > valB) return 1 * sortDir;
+                return 0;
+            });
+            renderTable();
+        }
+
+        // 6. Rendering (Pagination)
+        function renderTable() {
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+
+            if(displayData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:30px; color:#64748B;">No records found.</td></tr>`;
+                updatePaginationControls(0);
+                return;
+            }
+
+            // Pagination Slice
+            const start = (currentPage - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const pageData = displayData.slice(start, end);
+
+            pageData.forEach(row => {
+                const tr = document.createElement('tr');
+                
+                // Advanced formatting
+                const serious = Number(row.Serious) || 0;
+                const statusDot = serious > 500 ? '<span class="status-dot status-serious"></span>' : '<span class="status-dot status-safe"></span>';
+                
+                tr.innerHTML = `
+                    <td style="color:var(--primary-light); font-weight:700;">${row.Date}</td>
+                    <td class="cell-country"><span class="flag-dot"></span> ${row.Country}</td>
+                    <td>${Number(row.Cases).toLocaleString()}</td>
+                    <td class="${Number(row.Deaths)>1000?'val-deaths':''}">${Number(row.Deaths).toLocaleString()}</td>
+                    <td class="val-success">${Number(row.Recovered||0).toLocaleString()}</td>
+                    <td>${Number(row.Mild).toLocaleString()}</td>
+                    <td class="${serious>500?'val-serious':''}">${statusDot}${serious.toLocaleString()}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            updatePaginationControls(displayData.length);
+        }
+
+        function updatePaginationControls(total) {
+            if(!isPremium) return;
+            const start = (currentPage - 1) * rowsPerPage + 1;
+            const end = Math.min(currentPage * rowsPerPage, total);
+            
+            document.getElementById('page-start').innerText = total === 0 ? 0 : start;
+            document.getElementById('page-end').innerText = end;
+            document.getElementById('total-rows').innerText = total;
+
+            document.getElementById('btn-prev').disabled = currentPage === 1;
+            document.getElementById('btn-next').disabled = end >= total;
+        }
+
+        function changePage(delta) {
+            currentPage += delta;
+            renderTable();
+        }
+        
+        function resetFilters() {
+            document.querySelectorAll('input, select').forEach(el => el.value = '');
+            currentPage = 1;
+            applyFilters();
+        }
+
+        // 7. Export Functions
+        async function exportPDF() {
+            if(displayData.length === 0) return;
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            try {
+                const img = await loadImage('./assets/images/logo.png');
+                doc.addImage(img, 'PNG', 15, 10, 10, 10);
+            } catch(e){}
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(16);
+            doc.setTextColor(124, 58, 237);
+            doc.text("Epoch19 Global Report", 30, 18);
+            
+            doc.setFontSize(10);
+            doc.setTextColor(100);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Generated: ${new Date().toLocaleDateString()}`, 30, 24);
+
+            const headers = [["Date", "Country", "Cases", "Deaths", "Recovered", "Serious"]];
+            const rows = displayData.map(r => [r.Date, r.Country, r.Cases, r.Deaths, r.Recovered, r.Serious]);
+
+            doc.autoTable({
+                head: headers, body: rows, startY: 30,
+                theme: 'grid',
+                headStyles: { fillColor: [124, 58, 237], textColor: 255 }
+            });
+            doc.save('epoch19_report.pdf');
+        }
+
+        function exportCSV() {
+            if(displayData.length === 0) return;
+            let csv = "Date,Country,Cases,Deaths,Recovered,Mild,Serious\n";
+            displayData.forEach(r => {
+                csv += `${r.Date},${r.Country},${r.Cases},${r.Deaths},${r.Recovered},${r.Mild},${r.Serious}\n`;
+            });
+            const link = document.createElement("a");
+            link.href = encodeURI("data:text/csv;charset=utf-8," + csv);
+            link.download = "epoch19_data.csv";
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        }
+        
+        function loadImage(src) {
+            return new Promise((res, rej) => {
+                const img = new Image(); img.src = src;
+                img.onload = () => res(img); img.onerror = rej;
+            });
+        }
+
+        // 8. Footer
+        async function loadFooter() {
+            try {
+                const s = await getDoc(doc(db, "config", "main_settings"));
+                if(s.exists()) {
+                    const d = s.data();
+                    if(d.contact_email) document.getElementById('link-email').href = `mailto:${d.contact_email}`;
+                    if(d.contact_whatsapp) document.getElementById('link-whatsapp').href = `https://wa.me/${d.contact_whatsapp}`;
+                }
+            } catch(e){}
+        }
+
+        // PWA
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; setTimeout(() => document.getElementById('pwa-install-popup').style.display = 'block', 3000); });
+        window.installPWA = async () => { if(deferredPrompt) { deferredPrompt.prompt(); const {outcome} = await deferredPrompt.userChoice; if(outcome==='accepted') document.getElementById('pwa-install-popup').style.display = 'none'; deferredPrompt=null; }};
+        window.dismissPWA = () => document.getElementById('pwa-install-popup').style.display = 'none';
+        if("serviceWorker" in navigator) navigator.serviceWorker.register("./service-worker.js").catch(()=>{});
+    </script>
+</body>
+</html>

@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In | Epoch19</title>
+    
+    <!-- PWA Manifest & Meta -->
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#020617">
+    <link rel="apple-touch-icon" href="assets/images/logo.png">
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        /* --- 1. CONFIGURATION --- */
+        :root {
+            --bg-deep: #020617;
+            /* UPDATED: Vibrant Purple Accent */
+            --primary: #7C3AED; 
+            --primary-hover: #6D28D9;
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --glass-bg: rgba(30, 41, 59, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --input-bg: rgba(15, 23, 42, 0.6);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* --- 2. BACKGROUND (Visibility Improved) --- */
+        .bg-wrapper {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2;
+            background: 
+                /* Lighter overlay to show background image */
+                linear-gradient(to bottom, rgba(2, 6, 23, 0.6), rgba(2, 6, 23, 0.85)),
+                url('assets/images/background.png');
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* --- 3. GLOBAL HEADER --- */
+        .global-header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1.2rem 5%;
+            display: flex;
+            justify-content: space-between; /* Spaced out logo and button */
+            align-items: center;
+            z-index: 100;
+            background: linear-gradient(to bottom, rgba(2,6,23,0.8), transparent);
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        .header-brand:hover { opacity: 0.8; }
+        .header-brand img { height: 36px; }
+        
+        .header-brand h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: -0.5px;
+        }
+        /* UPDATED: Color for '19' */
+        .header-brand h1 span {
+            color: var(--primary);
+        }
+
+        /* Header Signup Button */
+        .header-btn {
+            padding: 8px 24px;
+            border: 1px solid var(--glass-border);
+            border-radius: 50px;
+            color: var(--text-main);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(4px);
+            transition: all 0.3s ease;
+        }
+        .header-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(124, 58, 237, 0.4);
+        }
+
+        /* --- 4. MAIN CONTENT --- */
+        main {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 80px 20px;
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 420px;
+            padding: 2.5rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: fade-up 0.8s ease-out;
+        }
+
+        .card-header { text-align: center; margin-bottom: 2rem; }
+        .card-header h2 { font-size: 1.6rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .card-header p { color: var(--text-muted); font-size: 0.95rem; }
+
+        /* --- 5. FORM STYLING --- */
+        .form-group { margin-bottom: 1.25rem; }
+        .form-group label {
+            display: block; margin-bottom: 0.5rem;
+            font-size: 0.9rem; font-weight: 500; color: var(--text-muted);
+        }
+
+        .input-wrapper { position: relative; display: flex; align-items: center; }
+        
+        .input-wrapper i.icon-left {
+            position: absolute; left: 14px;
+            color: var(--text-muted); font-size: 1.2rem; pointer-events: none;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 0.9rem 1rem 0.9rem 3rem;
+            background: var(--input-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            color: var(--text-main);
+            font-size: 1rem;
+            transition: all 0.3s;
+            outline: none;
+        }
+        .input-wrapper input:focus {
+            border-color: var(--primary);
+            /* Updated Shadow Color */
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+        }
+
+        .toggle-password {
+            position: absolute; right: 14px;
+            color: var(--text-muted); cursor: pointer;
+            font-size: 1.3rem; transition: color 0.2s;
+        }
+        .toggle-password:hover { color: var(--text-main); }
+
+        /* Forgot Password Link */
+        .form-options {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 1.5rem;
+            margin-top: -0.5rem;
+        }
+        .link-forgot {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .link-forgot:hover { color: var(--primary); }
+
+        .btn-submit {
+            width: 100%;
+            padding: 0.9rem;
+            background: var(--primary);
+            color: white;
+            border: none; border-radius: 10px;
+            font-size: 1rem; font-weight: 600;
+            cursor: pointer; transition: all 0.2s;
+            display: flex; justify-content: center; align-items: center; gap: 10px;
+        }
+        .btn-submit:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            /* Updated Shadow Color */
+            box-shadow: 0 10px 20px -5px rgba(124, 58, 237, 0.4);
+        }
+        .btn-submit:disabled {
+            opacity: 0.7; cursor: not-allowed; transform: none;
+        }
+
+        .auth-footer {
+            margin-top: 1.5rem; text-align: center;
+            font-size: 0.95rem; color: var(--text-muted);
+        }
+        .auth-footer a {
+            color: var(--primary); text-decoration: none;
+            font-weight: 600; transition: color 0.2s;
+        }
+        .auth-footer a:hover { text-decoration: underline; }
+
+        /* --- 6. FOOTER --- */
+        .global-footer {
+            padding: 1.5rem; text-align: center;
+            color: var(--text-muted); font-size: 0.85rem;
+            border-top: 1px solid var(--glass-border);
+            background: rgba(2, 6, 23, 0.6);
+            backdrop-filter: blur(10px);
+        }
+
+        @keyframes fade-up {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <div class="bg-wrapper"></div>
+
+    <!-- GLOBAL HEADER -->
+    <header class="global-header">
+        <a href="index.html" class="header-brand">
+            <img src="assets/images/logo.png" alt="Epoch19 Logo">
+            <!-- UPDATED: Added span for color -->
+            <h1>Epoch<span>19</span></h1>
+        </a>
+        <!-- Added Signup Button -->
+        <a href="signup.html" class="header-btn">Sign Up</a>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main>
+        <div class="auth-card">
+            <div class="card-header">
+                <h2>Welcome Back</h2>
+                <p>Secure access to the global archive</p>
+            </div>
+
+            <form id="login-form">
+                <!-- Email -->
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <div class="input-wrapper">
+                        <i class='bx bx-envelope icon-left'></i>
+                        <input type="email" id="login-email" placeholder="researcher@institute.org" required>
+                    </div>
+                </div>
+
+                <!-- Password -->
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="input-wrapper">
+                        <i class='bx bx-lock-alt icon-left'></i>
+                        <input type="password" id="login-pass" placeholder="••••••••" required>
+                        <i class='bx bx-show toggle-password' id="toggle-icon"></i>
+                    </div>
+                </div>
+
+                <!-- Forgot Password Link -->
+                <div class="form-options">
+                    <a href="forgot-password.html" class="link-forgot">Forgot Password?</a>
+                </div>
+
+                <!-- UPDATED BUTTON TEXT -->
+                <button type="submit" class="btn-submit" id="btn-login">
+                    Sign In
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                New to Epoch19? <a href="signup.html">Create Account</a>
+            </div>
+        </div>
+    </main>
+
+    <!-- GLOBAL FOOTER -->
+    <footer class="global-footer">
+        &copy; 2025 Epoch19 Global Data Archive. All rights reserved.
+    </footer>
+
+    <!-- PWA INSTALL POPUP -->
+    <div id="pwa-install-popup" style="
+        display: none; 
+        position: fixed; bottom: 20px; right: 20px; 
+        background: rgba(15, 23, 42, 0.95); 
+        border: 1px solid var(--primary);
+        backdrop-filter: blur(12px);
+        padding: 20px; border-radius: 16px; 
+        z-index: 10000; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        max-width: 320px; animation: slideUp 0.5s ease-out;
+    ">
+        <div style="display:flex; align-items:center; gap:15px; margin-bottom:15px;">
+            <img src="assets/images/logo.png" style="width:50px; height:50px; border-radius:10px;">
+            <div>
+                <h4 style="color:#fff; margin:0; font-family:'Inter', sans-serif;">Install App</h4>
+                <p style="color:#94A3B8; margin:5px 0 0; font-size:0.8rem;">Access the archive directly.</p>
+            </div>
+        </div>
+        <div style="display:flex; gap:10px;">
+            <button id="pwa-dismiss" style="flex:1; padding:10px; background:transparent; border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:8px; cursor:pointer;">Later</button>
+            <button id="pwa-install-btn" style="flex:1; padding:10px; background:var(--primary); border:none; color:#fff; font-weight:700; border-radius:8px; cursor:pointer;">Install</button>
+        </div>
+    </div>
+
+    <!-- --- FIREBASE LOGIC --- -->
+    <script type="module">
+        // --- 1. IMPORT CONFIG ---
+        import { auth, db } from './firebase-config.js';
+
+        // --- 2. IMPORT MODULES ---
+        import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+
+        // UI Logic: Password Toggle
+        const toggleBtn = document.getElementById('toggle-icon');
+        const passInput = document.getElementById('login-pass');
+
+        toggleBtn.addEventListener('click', () => {
+            const type = passInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passInput.setAttribute('type', type);
+            toggleBtn.classList.toggle('bx-show');
+            toggleBtn.classList.toggle('bx-hide');
+        });
+
+        // Backend Logic: Login & Role Check
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-pass').value;
+            const btn = document.getElementById('btn-login');
+
+            // Advanced Loading State
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = `<i class='bx bx-loader-alt bx-spin' style="font-size: 1.2rem;"></i> Verifying Credentials...`;
+            btn.disabled = true;
+
+            try {
+                // 1. Authenticate
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const uid = userCredential.user.uid;
+
+                // 2. Fetch User Role
+                const userDocRef = doc(db, "users", uid);
+                const userDoc = await getDoc(userDocRef);
+
+                let redirectUrl = "dashboard.html"; // Default
+
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    if (userData.role === "admin") {
+                        redirectUrl = "admin-dashboard.html"; // Fixed redirect to correct admin file
+                    }
+                }
+                
+                // Show Green Success Message before redirect
+                btn.style.backgroundColor = "#10B981"; // Success Green
+                btn.style.borderColor = "#10B981";
+                btn.innerHTML = `<i class='bx bx-check-circle' style="font-size: 1.2rem;"></i> Access Granted`;
+                
+                setTimeout(() => {
+                     // 3. Success Redirect
+                    window.location.href = redirectUrl;
+                }, 800);
+
+            } catch (error) {
+                console.error("Login Error:", error);
+
+                let msg = "Invalid credentials.";
+                if(error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') msg = "Invalid email or password.";
+                if(error.code === 'auth/too-many-requests') msg = "Too many failed attempts. Try again later.";
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Access Denied',
+                    text: msg,
+                    background: '#1E293B',
+                    color: '#fff',
+                    confirmButtonColor: '#EF4444'
+                });
+
+                // Reset Button
+                btn.innerHTML = originalContent;
+                btn.disabled = false;
+                btn.style.backgroundColor = ""; // Reset color
+                btn.style.borderColor = "";
+            }
+        });
+
+        // --- PWA INSTALL LOGIC ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(() => console.log('SW Registered'))
+                    .catch(err => console.log('SW Failed', err));
+            });
+        }
+
+        let deferredPrompt;
+        const pwaPopup = document.getElementById('pwa-install-popup');
+        const installBtn = document.getElementById('pwa-install-btn');
+        const dismissBtn = document.getElementById('pwa-dismiss');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            setTimeout(() => { pwaPopup.style.display = 'block'; }, 2000);
+        });
+
+        installBtn.addEventListener('click', (e) => {
+            pwaPopup.style.display = 'none';
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    deferredPrompt = null;
+                });
+            }
+        });
+
+        dismissBtn.addEventListener('click', () => {
+            pwaPopup.style.display = 'none';
+        });
+
+        window.addEventListener('appinstalled', () => {
+            pwaPopup.style.display = 'none';
+        });
+    </script>
+</body>
+</html>

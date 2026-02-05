@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <!-- ZERO ZOOM FIX -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Global Config | Epoch19 Admin</title>
+    
+    <!-- PWA Manifest & Meta -->
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" type="image/svg+xml" href="./assets/images/favicon.svg">
+    <meta name="theme-color" content="#1e293b">
+    
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@800&family=Playfair+Display:ital,wght@0,600;1,600&family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        :root {
+            /* Theme Variables */
+            --bg-body: #0f172a;       
+            --bg-glass: rgba(30, 41, 59, 0.85);
+            --text-main: #F1F5F9;     
+            --text-muted: #94A3B8; 
+            
+            /* THEME: Vibrant Purple (FK Style) */
+            --primary-base: #7C3AED;  
+            --primary-light: #A78BFA; 
+            --primary-gradient: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%);
+            
+            --success: #10B981;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+            --gold: #F59E0B;
+            
+            --sidebar-width: 260px; 
+            --header-height: 70px;
+            --radius: 16px;
+            
+            /* Fonts */
+            --font-head: 'Cinzel', serif;
+            --font-body: 'Inter', sans-serif;
+            --font-display: 'Space Grotesk', sans-serif;
+            --font-mono: 'Space Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            font-family: var(--font-body); 
+            background-color: var(--bg-body); 
+            background: url('./assets/images/background.png') no-repeat center center fixed;
+            background-size: cover;
+            color: var(--text-main); 
+            min-height: 100vh; 
+            overflow-x: hidden;
+            display: flex; flex-direction: column;
+        }
+
+        /* --- HEADER --- */
+        header {
+            position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height);
+            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 24px; z-index: 1000;
+        }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        
+        .logo { 
+            font-family: var(--font-head); font-weight: 700; color: #ffffff; 
+            font-size: 1.5rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; 
+        }
+        .logo span { color: var(--primary-light); font-weight: 700; }
+        .admin-badge {
+            background: var(--primary-base); color: white;
+            padding: 4px 10px; border-radius: 6px; font-size: 0.7rem;
+            font-weight: 700; text-transform: uppercase; margin-left: 8px; vertical-align: middle;
+            font-family: var(--font-mono); box-shadow: 0 2px 10px rgba(124, 58, 237, 0.3);
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar { 
+            position: fixed; top: var(--header-height); left: 0; 
+            width: var(--sidebar-width); height: calc(100vh - var(--header-height)); 
+            background: rgba(15, 23, 42, 0.95); border-right: 1px solid rgba(255,255,255,0.05); 
+            padding: 20px 0; overflow-y: auto; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            z-index: 999; display: flex; flex-direction: column; backdrop-filter: blur(20px); 
+            transform: translateX(0); 
+        }
+        
+        main { 
+            margin-left: var(--sidebar-width); margin-top: var(--header-height); 
+            padding: 30px; width: calc(100% - var(--sidebar-width)); flex: 1; 
+            transition: all 0.3s ease; max-width: 1600px;
+            display: grid; grid-template-columns: 350px 1fr; gap: 2rem;
+        }
+
+        .hamburger { font-size: 1.4rem; cursor: pointer; color: var(--text-muted); display: none; }
+        
+        .nav-group { padding: 0 24px; margin-bottom: 20px; }
+        .nav-label { font-size: 0.7rem; text-transform: uppercase; color: var(--primary-base); font-weight: 700; margin-bottom: 8px; }
+        .nav-item { display: flex; align-items: center; padding: 12px 14px; color: var(--text-muted); text-decoration: none; font-size: 0.9rem; border-radius: 10px; margin-bottom: 4px; transition: 0.2s; }
+        .nav-item:hover { color: var(--text-main); background: rgba(255,255,255,0.05); transform: translateX(5px); }
+        .nav-item.active { background: linear-gradient(90deg, rgba(124, 58, 237, 0.15) 0%, transparent 100%); color: var(--primary-light); font-weight: 600; border-left: 3px solid var(--primary-base); }
+        .nav-item i { width: 25px; text-align: center; margin-right: 10px; }
+
+        @media (max-width: 1024px) {
+            .sidebar { transform: translateX(-100%); width: 280px; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
+            .sidebar.active { transform: translateX(0); }
+            main { margin-left: 0; width: 100%; padding: 20px; grid-template-columns: 1fr; }
+            .hamburger { display: block; }
+        }
+
+        /* --- CONFIG PANEL (LEFT) --- */
+        .glass-panel {
+            background: var(--bg-glass); backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.05); border-radius: var(--radius);
+            padding: 1.5rem; display: flex; flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .panel-header {
+            margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;
+        }
+        .panel-header h2 { font-size: 1.1rem; display: flex; align-items: center; gap: 8px; color: #fff; margin: 0; font-family: var(--font-display); }
+        .panel-header h2 i { color: var(--primary-light); }
+
+        .form-group { margin-bottom: 1.2rem; }
+        .form-label { display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.8rem; font-family: var(--font-mono); font-weight: 600; }
+        
+        .input-group { position: relative; }
+        .input-group i {
+            position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+            color: var(--primary-light); font-size: 1.1rem;
+        }
+        .form-input {
+            width: 100%; padding: 12px 12px 12px 40px;
+            background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px; color: #fff; outline: none; transition: 0.3s;
+            font-family: var(--font-body); font-size: 0.9rem;
+        }
+        .form-input:focus { border-color: var(--primary-base); box-shadow: 0 0 10px rgba(124, 58, 237, 0.2); }
+
+        .btn-save {
+            width: 100%; padding: 12px; margin-top: 15px;
+            background: var(--primary-base); color: white; border: none; border-radius: 10px;
+            font-weight: 700; cursor: pointer; transition: 0.3s;
+            display: flex; justify-content: center; align-items: center; gap: 8px;
+            font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 1px;
+        }
+        .btn-save:hover { background: var(--primary-light); box-shadow: 0 5px 15px rgba(124, 58, 237, 0.3); }
+
+        /* --- USERS PANEL (RIGHT) --- */
+        .users-panel {
+            max-height: calc(100vh - 120px);
+            overflow: hidden;
+        }
+        
+        .toolbar {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 1rem;
+        }
+        .search-bar { width: 100%; max-width: 300px; }
+        .search-bar input { padding-left: 40px; background: rgba(255,255,255,0.03); }
+
+        .table-scroll { overflow-y: auto; overflow-x: auto; flex: 1; width: 100%; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); }
+        
+        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 650px; }
+        
+        thead th {
+            position: sticky; top: 0; background: #151f32; z-index: 10;
+            padding: 1rem; font-size: 0.75rem; color: var(--primary-light);
+            border-bottom: 2px solid rgba(255,255,255,0.05); text-transform: uppercase;
+            font-family: var(--font-mono);
+        }
+        tbody tr { border-bottom: 1px solid rgba(255,255,255,0.03); transition: 0.2s; }
+        tbody tr:hover { background: rgba(255,255,255,0.02); }
+        td { padding: 0.8rem 1rem; font-size: 0.9rem; color: var(--text-main); }
+
+        /* User Cell */
+        .user-cell { display: flex; align-items: center; gap: 12px; }
+        .user-avatar {
+            width: 36px; height: 36px; background: var(--primary-gradient);
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.85rem; flex-shrink: 0;
+            color: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .user-info div:first-child { font-weight: 600; font-size: 0.95rem; color: #fff; }
+        .user-info div:last-child { font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono); }
+
+        /* Badges */
+        .badge { padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; font-family: var(--font-mono); }
+        .badge-premium { background: rgba(245, 158, 11, 0.15); color: var(--gold); border: 1px solid rgba(245, 158, 11, 0.3); }
+        .badge-free { background: rgba(148, 163, 184, 0.1); color: var(--text-muted); border: 1px solid rgba(148, 163, 184, 0.2); }
+        .badge-admin { background: rgba(124, 58, 237, 0.15); color: var(--primary-light); border: 1px solid rgba(124, 58, 237, 0.3); }
+
+        /* Actions */
+        .action-cell { display: flex; gap: 8px; justify-content: flex-end; }
+        .btn-mini {
+            width: 32px; height: 32px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.03); color: var(--text-muted);
+            cursor: pointer; transition: 0.2s; font-size: 1rem;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .btn-mini:hover { background: rgba(255,255,255,0.1); color: #fff; transform: translateY(-2px); }
+        .btn-del:hover { background: rgba(239, 68, 68, 0.2); color: var(--danger); border-color: var(--danger); }
+        .btn-upg:hover { background: rgba(245, 158, 11, 0.2); color: var(--gold); border-color: var(--gold); }
+
+        /* --- FOOTER --- */
+        footer {
+            margin-top: auto; border-top: 1px solid rgba(255,255,255,0.05);
+            padding: 1.5rem 5%; background: #0f172a;
+            font-size: 0.8rem; color: var(--text-muted); text-align: center;
+            font-family: var(--font-mono);
+        }
+
+        @media(max-width: 1024px) {
+            .toolbar { flex-direction: column; gap: 10px; align-items: flex-start; }
+            .search-bar { max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <div class="header-left">
+            <i class="fas fa-bars hamburger" onclick="toggleSidebar()"></i>
+            <a href="admin-dashboard.html" class="logo">EPOCH<span>19</span> <span class="admin-badge">ADMIN</span></a>
+        </div>
+        <div></div> <!-- Spacer -->
+    </header>
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar" id="sidebar">
+        <div class="nav-group">
+            <div class="nav-label">Command Center</div>
+            <a href="admin-dashboard.html" class="nav-item"><i class="fa-solid fa-gauge-high"></i> Overview</a>
+            <a href="admin-data.html" class="nav-item"><i class="fa-solid fa-database"></i> Data Manager</a>
+            <a href="admin-payments.html" class="nav-item"><i class="fa-regular fa-credit-card"></i> Payments</a>
+            <a href="admin-resources.html" class="nav-item"><i class="fa-solid fa-bullhorn"></i> Post Resources</a>
+            <a href="admin-settings.html" class="nav-item active"><i class="fa-solid fa-sliders"></i> Global Config</a>
+        </div>
+        <div class="nav-group" style="margin-top: auto;">
+            <a href="dashboard.html" class="nav-item"><i class="fa-solid fa-arrow-right-from-bracket"></i> User View</a>
+            <a href="#" class="nav-item" id="btn-logout" style="color: var(--danger);"><i class="fa-solid fa-power-off"></i> Logout</a>
+        </div>
+    </nav>
+    <div class="overlay" id="overlay" onclick="closeSidebar()" style="position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:998; display:none;"></div>
+
+    <!-- MAIN CONTENT -->
+    <main>
+        
+        <!-- LEFT: CONFIG PANEL -->
+        <div class="glass-panel animate__animated animate__fadeInLeft">
+            <div class="panel-header">
+                <h2><i class="fa-solid fa-globe"></i> Platform Config</h2>
+            </div>
+            
+            <form id="config-form">
+                <div class="form-group">
+                    <label class="form-label">Admin PayPal Email (Wallet)</label>
+                    <div class="input-group">
+                        <i class="fa-brands fa-paypal"></i>
+                        <input type="email" id="conf-paypal" class="form-input" placeholder="payment@admin.com">
+                    </div>
+                    <small style="color:var(--text-muted); font-size:0.75rem; display:block; margin-top:5px; margin-left:5px;">Displayed on Upgrade page.</small>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Support Email</label>
+                    <div class="input-group">
+                        <i class="fa-regular fa-envelope"></i>
+                        <input type="email" id="conf-email" class="form-input" placeholder="support@epoch19.com">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">WhatsApp Number</label>
+                    <div class="input-group">
+                        <i class="fa-brands fa-whatsapp"></i>
+                        <input type="text" id="conf-whatsapp" class="form-input" placeholder="1234567890">
+                    </div>
+                    <small style="color:var(--text-muted); font-size:0.75rem; display:block; margin-top:5px; margin-left:5px;">No spaces/symbols (e.g. 254712345678)</small>
+                </div>
+
+                <button type="submit" class="btn-save" id="btn-save-conf">
+                    <i class="fa-regular fa-floppy-disk"></i> Update System
+                </button>
+            </form>
+        </div>
+
+        <!-- RIGHT: USER MANAGER -->
+        <div class="glass-panel users-panel animate__animated animate__fadeInRight">
+            <div class="panel-header toolbar">
+                <h2><i class="fa-solid fa-users-gear"></i> User Manager</h2>
+                <div class="input-group search-bar">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="user-search" class="form-input" placeholder="Find user...">
+                </div>
+            </div>
+
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User Profile</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th style="text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table-body">
+                        <!-- Users Loaded Here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+        Epoch19 Admin System &copy; 2025
+    </footer>
+
+    <!-- PWA INSTALL POPUP -->
+    <div id="pwa-install-popup" style="display: none; position: fixed; bottom: 20px; right: 20px; background: #1e293b; border: 1px solid var(--primary-base); border-radius: 20px; padding: 20px; z-index: 3000; box-shadow: 0 10px 40px rgba(0,0,0,0.5); width: 300px;">
+        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+            <div style="width: 40px; height: 40px; border-radius: 10px; background: var(--primary-gradient); display: grid; place-items: center; font-size: 1.2rem; color: #fff;"><i class="fas fa-shield-halved"></i></div>
+            <div><div style="font-weight:700; color:#fff; font-size:0.9rem;">Admin Console</div><div style="font-size:0.75rem; color:#94A3B8;">Install for easier management.</div></div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button onclick="installPWA()" style="flex: 2; padding: 8px; background: var(--primary-base); border: none; border-radius: 8px; font-weight: 700; cursor: pointer; color: #fff; font-size: 0.8rem;">Install</button>
+            <button onclick="dismissPWA()" style="flex: 1; padding: 8px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: var(--text-muted); cursor: pointer; font-size: 0.8rem;">Later</button>
+        </div>
+    </div>
+
+    <!-- LOGIC -->
+    <script type="module">
+        import { auth, db } from './firebase-config.js';
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+        import { doc, getDoc, setDoc, collection, getDocs, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+
+        let allUsers = [];
+
+        // UI Helpers
+        window.toggleSidebar = () => { document.getElementById('sidebar').classList.toggle('active'); document.getElementById('overlay').style.display = 'block'; };
+        window.closeSidebar = () => { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').style.display = 'none'; };
+        window.logout = () => signOut(auth).then(() => window.location.href = "index.html");
+
+        // 1. Auth Guard
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.href = "login.html"; return; }
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+            if (!userDoc.exists() || userDoc.data().role !== 'admin') {
+                window.location.href = "dashboard.html";
+            } else {
+                loadConfig();
+                loadUsers();
+            }
+        });
+
+        // 2. Load Config
+        async function loadConfig() {
+            try {
+                const docSnap = await getDoc(doc(db, "config", "main_settings"));
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    document.getElementById('conf-paypal').value = data.admin_paypal || "";
+                    document.getElementById('conf-email').value = data.contact_email || "";
+                    document.getElementById('conf-whatsapp').value = data.contact_whatsapp || "";
+                }
+            } catch (e) { console.error("Config load error", e); }
+        }
+
+        // 3. Save Config
+        document.getElementById('config-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-save-conf');
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Saving...`;
+
+            try {
+                await setDoc(doc(db, "config", "main_settings"), {
+                    admin_paypal: document.getElementById('conf-paypal').value,
+                    contact_email: document.getElementById('conf-email').value,
+                    contact_whatsapp: document.getElementById('conf-whatsapp').value
+                }, { merge: true });
+
+                Swal.fire({
+                    toast: true, position: 'top-end', icon: 'success', 
+                    title: 'System Config Updated', background: '#0f172a', color:'#fff', timer: 2000, showConfirmButton: false
+                });
+            } catch (error) {
+                Swal.fire('Error', 'Update Failed', 'error');
+            } finally {
+                btn.innerHTML = `<i class="fa-regular fa-floppy-disk"></i> Update System`;
+            }
+        });
+
+        // 4. Load Users
+        async function loadUsers() {
+            try {
+                const snapshot = await getDocs(collection(db, "users"));
+                allUsers = [];
+                snapshot.forEach(doc => allUsers.push({ id: doc.id, ...doc.data() }));
+                renderUsers(allUsers);
+            } catch (e) { console.error("User load error", e); }
+        }
+
+        function renderUsers(users) {
+            const tbody = document.getElementById('users-table-body');
+            tbody.innerHTML = "";
+
+            users.forEach(u => {
+                const initials = u.fullName ? u.fullName.substring(0,2).toUpperCase() : '??';
+                const roleBadge = u.role === 'admin' ? '<span class="badge badge-admin">Admin</span>' : '<span class="badge badge-free">User</span>';
+                const statusBadge = u.status === 'premium' 
+                    ? '<span class="badge badge-premium">Premium</span>' 
+                    : '<span class="badge badge-free">Free</span>';
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <div class="user-cell">
+                            <div class="user-avatar">${initials}</div>
+                            <div class="user-info">
+                                <div>${u.fullName || 'No Name'}</div>
+                                <div>${u.email}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${roleBadge}</td>
+                    <td>${statusBadge}</td>
+                    <td class="action-cell">
+                        <button class="btn-mini btn-upg" title="Toggle Premium" onclick="togglePremium('${u.id}', '${u.status}')">
+                            <i class="fa-solid fa-crown"></i>
+                        </button>
+                        <button class="btn-mini btn-del" title="Ban User" onclick="banUser('${u.id}')">
+                            <i class="fa-solid fa-ban"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // 5. Search
+        document.getElementById('user-search').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = allUsers.filter(u => 
+                (u.fullName && u.fullName.toLowerCase().includes(term)) || 
+                (u.email && u.email.toLowerCase().includes(term))
+            );
+            renderUsers(filtered);
+        });
+
+        // 6. User Actions
+        window.togglePremium = async (uid, currentStatus) => {
+            const newStatus = currentStatus === 'premium' ? 'free' : 'premium';
+            try {
+                await updateDoc(doc(db, "users", uid), { status: newStatus });
+                loadUsers(); // Reload table
+                Swal.fire({
+                    toast: true, position: 'top-end', icon: 'success', 
+                    title: `User set to ${newStatus.toUpperCase()}`, background: '#0f172a', color:'#fff', timer: 1500, showConfirmButton: false
+                });
+            } catch (e) { Swal.fire('Error', 'Update failed', 'error'); }
+        };
+
+        window.banUser = (uid) => {
+            Swal.fire({
+                title: 'Ban User?',
+                text: "This removes their database record. They will lose access immediately.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#EF4444',
+                cancelButtonColor: '#1e293b',
+                background: '#0f172a', color: '#fff'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    await deleteDoc(doc(db, "users", uid));
+                    loadUsers();
+                    Swal.fire({
+                        toast: true, position: 'top-end', icon: 'success', 
+                        title: 'User Banned', background: '#0f172a', color:'#fff', timer: 1500, showConfirmButton: false
+                    });
+                }
+            });
+        };
+
+        // --- PWA ---
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; setTimeout(() => document.getElementById('pwa-install-popup').style.display = 'block', 3000); });
+        window.installPWA = async () => { if(deferredPrompt) { deferredPrompt.prompt(); const {outcome} = await deferredPrompt.userChoice; if(outcome==='accepted') document.getElementById('pwa-install-popup').style.display = 'none'; deferredPrompt=null; }};
+        window.dismissPWA = () => document.getElementById('pwa-install-popup').style.display = 'none';
+        if("serviceWorker" in navigator) navigator.serviceWorker.register("./service-worker.js").catch(()=>{});
+    </script>
+</body>
+</html>

@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Terms of Service | Epoch19</title>
+    
+    <!-- PWA Manifest & Meta -->
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#020617">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="assets/images/logo.png">
+    <link rel="icon" type="image/svg+xml" href="assets/images/favicon.svg">
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+
+    <style>
+        /* --- 1. CONFIGURATION (Matches Index) --- */
+        :root {
+            --bg-deep: #020617;
+            --primary: #7C3AED;
+            --primary-hover: #6D28D9;
+            --accent: #A78BFA;
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --glass-surface: rgba(30, 41, 59, 0.4);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --font-ui: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-ui);
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+        }
+
+        /* --- 2. GLOBAL BACKGROUND --- */
+        .bg-wrapper {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -5;
+            background: 
+                linear-gradient(to bottom, rgba(2, 6, 23, 0.7), rgba(2, 6, 23, 0.98)),
+                url('assets/images/background.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        /* Cyber Grid Animation */
+        .grid-plane {
+            position: fixed; bottom: -20%; left: -50%; width: 200%; height: 80%;
+            background-image: 
+                linear-gradient(rgba(124, 58, 237, 0.15) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(124, 58, 237, 0.15) 1px, transparent 1px);
+            background-size: 60px 60px;
+            transform: perspective(500px) rotateX(60deg);
+            animation: gridMove 20s linear infinite;
+            z-index: -4;
+            mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 80%);
+            pointer-events: none;
+        }
+
+        @keyframes gridMove {
+            0% { transform: perspective(500px) rotateX(60deg) translateY(0); }
+            100% { transform: perspective(500px) rotateX(60deg) translateY(60px); }
+        }
+
+        /* --- 3. NAVIGATION --- */
+        nav {
+            position: fixed; top: 0; width: 100%; z-index: 100;
+            padding: 1.2rem 5%;
+            display: flex; justify-content: space-between; align-items: center;
+            backdrop-filter: blur(12px);
+            background: rgba(2, 6, 23, 0.6);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s ease;
+        }
+        nav.scrolled { padding: 0.8rem 5%; background: rgba(2, 6, 23, 0.95); border-bottom: 1px solid var(--glass-border); }
+
+        .logo { 
+            display: flex; align-items: center; gap: 12px; 
+            font-weight: 800; font-size: 1.3rem; letter-spacing: -0.5px;
+            color: #fff; text-decoration: none;
+        }
+        .logo img { height: 32px; filter: drop-shadow(0 0 10px rgba(124, 58, 237, 0.5)); }
+        .logo span span { color: var(--primary); }
+
+        /* Sign In / Dashboard Button */
+        .btn-signin {
+            position: relative;
+            padding: 0.6rem 1.4rem;
+            border: 1px solid var(--glass-border);
+            border-radius: 50px;
+            color: var(--text-main);
+            text-decoration: none;
+            font-size: 0.9rem; font-weight: 600;
+            background: rgba(255,255,255,0.05);
+            transition: 0.3s;
+            white-space: nowrap;
+            display: flex; align-items: center; justify-content: center;
+            min-width: 100px;
+        }
+        .btn-signin:hover { 
+            background: var(--primary); 
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(124, 58, 237, 0.4);
+            transform: translateY(-1px);
+        }
+
+        /* --- 4. TERMS CONTENT --- */
+        .legal-wrapper {
+            padding: 140px 5% 60px 5%;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header-group { text-align: center; margin-bottom: 4rem; }
+
+        .badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 14px;
+            background: rgba(124, 58, 237, 0.1);
+            border: 1px solid rgba(124, 58, 237, 0.3);
+            color: var(--accent); border-radius: 30px;
+            font-size: 0.75rem; font-weight: 600; margin-bottom: 1.5rem;
+            font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 1px;
+            backdrop-filter: blur(4px);
+        }
+        .badge::before { content:''; display:block; width:6px; height:6px; background:var(--primary); border-radius:50%; box-shadow:0 0 8px var(--primary); }
+
+        h1 {
+            font-size: 3.5rem; font-weight: 800; color: #fff; margin-bottom: 1rem;
+            letter-spacing: -1px;
+        }
+        .text-gradient {
+            background: linear-gradient(135deg, #fff 40%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Glassmorphic Document Container */
+        .doc-container {
+            background: var(--glass-surface);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 3rem;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 50px -10px rgba(0,0,0,0.5);
+        }
+
+        .section-block { margin-bottom: 3rem; }
+        .section-block:last-child { margin-bottom: 0; }
+
+        h2 {
+            font-size: 1.5rem; color: #fff; margin-bottom: 1rem;
+            display: flex; align-items: center; gap: 10px;
+        }
+        h2 i { color: var(--primary); font-size: 1.2rem; }
+
+        p, li {
+            font-size: 1rem; color: var(--text-muted); line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+
+        ul { margin-left: 20px; margin-bottom: 1rem; }
+        li { margin-bottom: 0.5rem; }
+
+        strong { color: var(--text-main); font-weight: 600; }
+
+        /* Loader Styles */
+        .loader {
+            display: none;
+            width: 18px; height: 18px;
+            border: 2px solid #fff;
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        .btn-loading .btn-text, .btn-loading i { display: none; }
+        .btn-loading .loader { display: block; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* --- 5. FOOTER --- */
+        footer {
+            border-top: 1px solid var(--glass-border);
+            padding: 3rem 5%; text-align: center;
+            background: #01040f;
+            font-size: 0.95rem; color: var(--text-muted);
+            margin-top: 4rem;
+        }
+        .footer-logo { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 1.5rem; color: white; font-weight: 700; font-size: 1.2rem; }
+        .footer-logo img { height: 28px; }
+        .footer-links a {
+            color: var(--text-muted); margin: 0 15px; text-decoration: none; transition:color 0.3s;
+        }
+        .footer-links a:hover { color: var(--primary); }
+
+        /* Scroll To Top */
+        .scroll-top {
+            position: fixed; bottom: 30px; right: 30px;
+            width: 50px; height: 50px;
+            background: rgba(124, 58, 237, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 1.5rem; cursor: pointer;
+            opacity: 0; pointer-events: none; transition: 0.3s;
+            z-index: 999;
+        }
+        .scroll-top.active { opacity: 1; pointer-events: auto; }
+        .scroll-top:hover { background: var(--primary); transform: translateY(-5px); }
+
+        /* Animations */
+        .reveal { opacity: 0; transform: translateY(40px); transition: all 0.8s ease; }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+        @keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        @media (max-width: 768px) {
+            .legal-wrapper { padding-top: 110px; }
+            h1 { font-size: 2.5rem; }
+            .doc-container { padding: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Global Background Elements -->
+    <div class="bg-wrapper"></div>
+    <div class="grid-plane"></div>
+
+    <!-- Nav -->
+    <nav id="navbar">
+        <a href="index.html" class="logo">
+            <img src="assets/images/logo.png" alt="Icon">
+            <span>Epoch<span>19</span></span>
+        </a>
+        <!-- Sign In Button with Loader -->
+        <a href="login.html" class="btn-signin" id="nav-auth-btn" onclick="animateButton(this)">
+            <span class="btn-text">Sign In</span>
+            <span class="loader"></span>
+        </a>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="legal-wrapper">
+        <div class="header-group reveal active">
+            <span class="badge">Last Updated: January 01, 2025</span>
+            <h1>Terms of <span class="text-gradient">Service</span></h1>
+            <p style="color: var(--text-muted); font-size: 1.1rem;">Please read these terms carefully before accessing the Epoch19 Archive.</p>
+        </div>
+
+        <div class="doc-container reveal">
+            <!-- Section 1 -->
+            <div class="section-block">
+                <h2><i class='bx bx-check-shield'></i> 1. Acceptance of Terms</h2>
+                <p>
+                    By accessing and using the Epoch19 Global COVID-19 Data Archive ("Service"), you agree to comply with and be bound by these Terms of Service. If you do not agree to these terms, you are prohibited from using or accessing this site.
+                </p>
+                <p>
+                    We reserve the right to modify these terms at any time. Your continued use of the Service following any changes constitutes your acceptance of the new Terms.
+                </p>
+            </div>
+
+            <!-- Section 2 -->
+            <div class="section-block">
+                <h2><i class='bx bx-user-circle'></i> 2. Account Registration</h2>
+                <p>To access granular datasets or API features, you must register for an account.</p>
+                <ul>
+                    <li><strong>Accuracy:</strong> You agree to provide accurate, current, and complete information during the registration process.</li>
+                    <li><strong>Security:</strong> You are responsible for safeguarding the password that you use to access the Service.</li>
+                    <li><strong>Eligibility:</strong> You must be at least 18 years of age or an authorized representative of a research institute to create an account.</li>
+                </ul>
+            </div>
+
+            <!-- Section 3 -->
+            <div class="section-block">
+                <h2><i class='bx bx-data'></i> 3. Data Usage & Licensing</h2>
+                <p>
+                    The data provided by Epoch19 is sourced from verified global health organizations.
+                </p>
+                <ul>
+                    <li><strong>Free Accounts:</strong> Access is limited to public aggregate data and visualization tools.</li>
+                    <li><strong>Premium Accounts:</strong> Granted a non-exclusive, non-transferable license to download raw datasets and access the API for research and commercial purposes.</li>
+                    <li><strong>Attribution:</strong> You must attribute "Epoch19 Global Archive" in any publiccation using our data.</li>
+                </ul>
+            </div>
+
+            <!-- Section 4 -->
+            <div class="section-block">
+                <h2><i class='bx bx-block'></i> 4. Prohibited Conduct</h2>
+                <p>You agree not to engage in any of the following prohibited activities:</p>
+                <ul>
+                    <li>Attempting to interfere with, compromise the system integrity or security, or decipher any transmissions to or from the servers running the Service.</li>
+                    <li>Using any robot, spider, crawler, scraper, or other automated means to access the Service for any purpose without our express written permission.</li>
+                    <li>Impersonating another person or otherwise misrepresenting your affiliation with a person or entity.</li>
+                </ul>
+            </div>
+
+            <!-- Section 5 -->
+            <div class="section-block">
+                <h2><i class='bx bx-error-circle'></i> 5. Disclaimer of Warranties</h2>
+                <p>
+                    The Service is provided on an "AS IS" and "AS AVAILABLE" basis. Epoch19 makes no representations or warranties of any kind, express or implied, regarding the accuracy, reliability, or completeness of the data. This data is for informational and research purposes only and does not constitute medical advice.
+                </p>
+            </div>
+            
+            <!-- Section 6 -->
+            <div class="section-block">
+                <h2><i class='bx bx-gavel'></i> 6. Governing Law</h2>
+                <p>
+                    These Terms shall be governed and construed in accordance with the laws of the jurisdiction in which Epoch19 operates, without regard to its conflict of law provisions.
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-logo">
+            <img src="assets/images/logo.png" alt="Logo">
+            Epoch19
+        </div>
+        <p>&copy; 2025 Epoch19 Global Data Archive. All rights reserved.</p>
+        <div class="footer-links" style="margin-top: 1.5rem; font-size: 0.85rem;">
+            <a href="privacy.html">Privacy Policy</a>
+            <a href="terms.html" style="color: var(--primary);">Terms of Service</a>
+        </div>
+    </footer>
+
+    <!-- Scroll To Top -->
+    <div class="scroll-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+        <i class='bx bx-up-arrow-alt'></i>
+    </div>
+
+    <!-- PWA POPUP -->
+    <div id="pwa-install-popup" style="
+        display: none; 
+        position: fixed; bottom: 25px; right: 25px; 
+        background: rgba(15, 23, 42, 0.95); 
+        border: 1px solid var(--primary);
+        backdrop-filter: blur(12px);
+        padding: 18px; border-radius: 16px; 
+        z-index: 10000; box-shadow: 0 15px 50px rgba(0,0,0,0.6);
+        max-width: 300px; animation: slideUp 0.5s ease-out;
+    ">
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px;">
+            <div style="width:45px; height:45px; border-radius:10px; background:linear-gradient(135deg, #7C3AED, #6D28D9); display:flex; align-items:center; justify-content:center;">
+                <img src="assets/images/logo.png" style="width:30px; height:30px; filter:brightness(10);">
+            </div>
+            <div>
+                <h4 style="color:#fff; margin:0; font-family:'Inter', sans-serif; font-size:0.95rem; font-weight:600;">Install App</h4>
+                <p style="color:#94A3B8; margin:2px 0 0; font-size:0.8rem;">Faster access & offline mode.</p>
+            </div>
+        </div>
+        <div style="display:flex; gap:10px;">
+            <button id="pwa-dismiss" style="flex:1; padding:10px; background:transparent; border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:500;">Later</button>
+            <button id="pwa-install-btn" style="flex:1; padding:10px; background:var(--primary); border:none; color:#fff; font-weight:600; border-radius:8px; cursor:pointer; font-size:0.85rem; box-shadow:0 4px 12px rgba(124, 58, 237, 0.3);">Install</button>
+        </div>
+    </div>
+
+    <!-- JS Logic -->
+    <script type="module">
+        import { auth } from './firebase-config.js';
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+
+        const authBtn = document.getElementById('nav-auth-btn');
+        const btnText = authBtn.querySelector('.btn-text');
+
+        // 1. Auth Check
+        // Note: For Terms page, we don't redirect logged-in users away (bad UX).
+        // Instead, we change the "Sign In" button to "Dashboard".
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                btnText.innerText = "Dashboard";
+                authBtn.setAttribute('onclick', "animateButton(this, 'dashboard.html')");
+            } else {
+                btnText.innerText = "Sign In";
+                authBtn.setAttribute('onclick', "animateButton(this, 'login.html')");
+            }
+        });
+
+        // 2. Navbar & Scroll Top Logic
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            const scrollTopBtn = document.querySelector('.scroll-top');
+            
+            if (window.scrollY > 30) {
+                nav.classList.add('scrolled');
+                scrollTopBtn.classList.add('active');
+            } else {
+                nav.classList.remove('scrolled');
+                scrollTopBtn.classList.remove('active');
+            }
+        });
+
+        // 3. Reveal Animation
+        const reveals = document.querySelectorAll('.reveal');
+        const revealOnScroll = () => {
+            const windowHeight = window.innerHeight;
+            const elementVisible = 80;
+            reveals.forEach((reveal) => {
+                const elementTop = reveal.getBoundingClientRect().top;
+                if (elementTop < windowHeight - elementVisible) {
+                    reveal.classList.add('active');
+                }
+            });
+        };
+        window.addEventListener('scroll', revealOnScroll);
+        revealOnScroll();
+
+        // 4. Advanced Button Spinner Logic
+        window.animateButton = (btn, url) => {
+            // If url is passed in the onclick call, use it. Otherwise defaults to what was set.
+            const targetUrl = url || (btn.innerText === "Dashboard" ? "dashboard.html" : "login.html");
+            
+            if(event) event.preventDefault();
+            
+            btn.classList.add('btn-loading');
+            
+            setTimeout(() => {
+                window.location.href = targetUrl;
+            }, 800);
+        };
+
+        // 5. PWA Logic
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js').catch(console.error);
+            });
+        }
+
+        let deferredPrompt;
+        const pwaPopup = document.getElementById('pwa-install-popup');
+        const installBtn = document.getElementById('pwa-install-btn');
+        const dismissBtn = document.getElementById('pwa-dismiss');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            setTimeout(() => { pwaPopup.style.display = 'block'; }, 4000);
+        });
+
+        installBtn.addEventListener('click', (e) => {
+            pwaPopup.style.display = 'none';
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt = null;
+            }
+        });
+
+        dismissBtn.addEventListener('click', () => {
+            pwaPopup.style.display = 'none';
+        });
+    </script>
+</body>
+</html>

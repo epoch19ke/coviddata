@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Revenue Control | Epoch19 Admin</title>
+    
+    <!-- PWA Manifest & Meta -->
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" type="image/svg+xml" href="./assets/images/favicon.svg">
+    <meta name="theme-color" content="#1e293b">
+    
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@800&family=Playfair+Display:ital,wght@0,600;1,600&family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        :root {
+            /* Theme Variables */
+            --bg-body: #0f172a;       
+            --bg-glass: rgba(30, 41, 59, 0.7);
+            --text-main: #F1F5F9;     
+            --text-muted: #94A3B8; 
+            
+            /* THEME: Vibrant Purple (FK Style) */
+            --primary-base: #7C3AED;  
+            --primary-light: #A78BFA; 
+            --primary-gradient: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%);
+            
+            --success: #10B981;
+            --success-gradient: linear-gradient(135deg, #34d399 0%, #059669 100%);
+            --danger: #EF4444;
+            --warning: #F59E0B;
+            
+            --sidebar-width: 260px; 
+            --header-height: 70px;
+            --radius: 16px;
+            
+            /* Fonts */
+            --font-head: 'Cinzel', serif;
+            --font-body: 'Inter', sans-serif;
+            --font-display: 'Space Grotesk', sans-serif;
+            --font-mono: 'Space Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            font-family: var(--font-body); 
+            background-color: var(--bg-body); 
+            background: url('./assets/images/background.png') no-repeat center center fixed;
+            background-size: cover;
+            color: var(--text-main); 
+            min-height: 100vh; 
+            overflow-x: hidden;
+            display: flex; flex-direction: column;
+        }
+
+        /* --- UI COMPONENTS --- */
+        .glass-panel { background: var(--bg-glass); backdrop-filter: blur(12px) saturate(180%); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius); }
+
+        /* --- HEADER --- */
+        header {
+            position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height);
+            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 24px; z-index: 1000;
+        }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        
+        .logo { 
+            font-family: var(--font-head); font-weight: 700; color: #ffffff; 
+            font-size: 1.5rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; 
+        }
+        .logo span { color: var(--primary-light); font-weight: 700; }
+        .admin-badge {
+            background: var(--primary-base); color: white;
+            padding: 2px 8px; border-radius: 4px; font-size: 0.6rem;
+            font-weight: 700; text-transform: uppercase; margin-left: 5px; vertical-align: middle;
+            font-family: var(--font-body);
+        }
+        
+        .user-avatar { width: 42px; height: 42px; border-radius: 12px; background: var(--primary-gradient); display: grid; place-items: center; font-weight: 700; color: #fff; cursor: pointer; }
+
+        /* --- SIDEBAR --- */
+        .sidebar { 
+            position: fixed; top: var(--header-height); left: 0; 
+            width: var(--sidebar-width); height: calc(100vh - var(--header-height)); 
+            background: rgba(15, 23, 42, 0.95); border-right: 1px solid rgba(255,255,255,0.05); 
+            padding: 20px 0; overflow-y: auto; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            z-index: 999; display: flex; flex-direction: column; backdrop-filter: blur(20px); 
+            transform: translateX(0); 
+        }
+        
+        main { 
+            margin-left: var(--sidebar-width); margin-top: var(--header-height); 
+            padding: 25px; width: calc(100% - var(--sidebar-width)); flex: 1; 
+            transition: all 0.3s ease; max-width: 1600px;
+        }
+
+        .hamburger { font-size: 1.4rem; cursor: pointer; color: var(--text-muted); display: none; }
+        
+        .nav-group { padding: 0 24px; margin-bottom: 20px; }
+        .nav-label { font-size: 0.7rem; text-transform: uppercase; color: var(--primary-base); font-weight: 700; margin-bottom: 8px; }
+        .nav-item { display: flex; align-items: center; padding: 12px 14px; color: var(--text-muted); text-decoration: none; font-size: 0.9rem; border-radius: 10px; margin-bottom: 4px; transition: 0.2s; }
+        .nav-item:hover { color: var(--text-main); background: rgba(255,255,255,0.05); transform: translateX(5px); }
+        .nav-item.active { background: linear-gradient(90deg, rgba(124, 58, 237, 0.15) 0%, transparent 100%); color: var(--primary-light); font-weight: 600; border-left: 3px solid var(--primary-base); }
+        .nav-item i { width: 25px; text-align: center; margin-right: 10px; }
+
+        @media (max-width: 992px) {
+            .sidebar { transform: translateX(-100%); width: 280px; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
+            .sidebar.active { transform: translateX(0); }
+            main { margin-left: 0; width: 100%; padding: 15px; }
+            .hamburger { display: block; }
+        }
+
+        /* --- PAGE CONTENT --- */
+        .page-header {
+            margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 1rem;
+        }
+        .page-title { font-size: 1.5rem; color: #fff; margin: 0; font-family: var(--font-display); font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        
+        .status-pill {
+            background: rgba(245, 158, 11, 0.1); color: var(--warning);
+            padding: 8px 20px; border-radius: 30px; font-size: 0.85rem;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            display: flex; align-items: center; gap: 8px; font-weight: 600;
+        }
+        .status-dot { width: 8px; height: 8px; background: var(--warning); border-radius: 50%; animation: pulse 1.5s infinite; }
+
+        .request-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* --- TRANSACTION CARD --- */
+        .req-card {
+            background: var(--bg-glass); backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 16px; padding: 1.5rem;
+            position: relative; overflow: hidden;
+            transition: all 0.3s;
+            display: flex; flex-direction: column; gap: 1rem;
+        }
+        .req-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+
+        /* Card Status Borders */
+        .req-card.status-approved { border-left: 4px solid var(--success); }
+        .req-card.status-rejected { border-left: 4px solid var(--danger); opacity: 0.7; }
+        .req-card.status-pending { border-left: 4px solid var(--warning); border-color: rgba(245, 158, 11, 0.3); }
+
+        .req-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .req-user h3 { font-size: 1.1rem; margin-bottom: 3px; color: #fff; font-weight: 600; }
+        .req-user p { font-size: 0.85rem; color: var(--text-muted); }
+        .req-time { font-size: 0.75rem; color: var(--primary-light); font-family: var(--font-mono); text-align: right; background: rgba(124, 58, 237, 0.1); padding: 4px 8px; border-radius: 6px; }
+
+        .req-details {
+            background: rgba(0,0,0,0.3);
+            padding: 1rem; border-radius: 12px;
+            font-family: var(--font-mono); font-size: 0.8rem;
+            border: 1px solid rgba(255,255,255,0.03);
+        }
+        .detail-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+        .detail-row:last-child { margin-bottom: 0; }
+        .detail-label { color: var(--text-muted); }
+        .detail-val { color: #fff; }
+        .val-txn { color: var(--primary-light); letter-spacing: 0.5px; font-weight: 700; }
+
+        .req-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: auto; }
+        .btn-action {
+            padding: 12px; border: none; border-radius: 10px;
+            font-weight: 600; cursor: pointer; transition: 0.2s;
+            display: flex; justify-content: center; align-items: center; gap: 8px; font-size: 0.9rem;
+        }
+        .btn-approve { background: var(--success-gradient); color: #fff; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
+        .btn-approve:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5); }
+        .btn-reject { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); }
+        .btn-reject:hover { background: var(--danger); color: #fff; }
+
+        /* Badges */
+        .status-badge {
+            text-align: center; padding: 10px; border-radius: 10px;
+            font-weight: 700; font-size: 0.8rem; letter-spacing: 1px;
+            margin-top: auto; display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .badge-approved { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.2); }
+        .badge-rejected { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2); }
+
+        .empty-state { grid-column: 1 / -1; text-align: center; padding: 4rem 1rem; color: var(--text-muted); }
+        .empty-icon { font-size: 3rem; opacity: 0.3; margin-bottom: 1rem; display: block; color: var(--primary-base); }
+        
+        .app-footer { margin-top: auto; padding: 30px 25px; background: #0f172a; border-top: 1px solid rgba(255,255,255,0.05); text-align: center; color: var(--text-muted); font-size: 0.8rem; }
+        
+        @keyframes pulse { 0% { opacity: 0.5; box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); } 50% { opacity: 1; box-shadow: 0 0 0 4px rgba(245, 158, 11, 0); } 100% { opacity: 0.5; } }
+        
+        @media(max-width: 768px) {
+            .page-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+            .request-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <div class="header-left">
+            <i class="fas fa-bars hamburger" onclick="toggleSidebar()"></i>
+            <a href="admin-dashboard.html" class="logo">EPOCH<span>19</span> <span class="admin-badge">ADMIN</span></a>
+        </div>
+        
+        <div class="header-actions">
+            <div class="user-avatar" id="header-avatar-fallback" onclick="location.href='admin-settings.html'">A</div>
+        </div>
+    </header>
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar" id="sidebar">
+        <div class="nav-group">
+            <div class="nav-label">Command Center</div>
+            <a href="admin-dashboard.html" class="nav-item"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+            <a href="admin-data.html" class="nav-item"><i class="fa-solid fa-database"></i> Data Manager</a>
+        </div>
+        <div class="nav-group">
+            <div class="nav-label">Operations</div>
+            <a href="admin-payments.html" class="nav-item active"><i class="fa-solid fa-credit-card"></i> Payments</a>
+            <a href="admin-resources.html" class="nav-item"><i class="fa-solid fa-bullhorn"></i> Broadcast</a>
+        </div>
+        <div class="nav-group">
+            <div class="nav-label">System</div>
+            <a href="admin-settings.html" class="nav-item"><i class="fa-solid fa-sliders"></i> Global Config</a>
+            <a href="dashboard.html" class="nav-item"><i class="fa-solid fa-eye"></i> User View</a>
+            <a href="#" onclick="logout()" class="nav-item" style="color:var(--danger); margin-top:10px;"><i class="fa-solid fa-power-off"></i> Logout</a>
+        </div>
+    </nav>
+    <div class="overlay" id="overlay" onclick="closeSidebar()" style="position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:998; display:none;"></div>
+
+    <!-- MAIN CONTENT -->
+    <main>
+        <div class="page-header animate__animated animate__fadeInDown">
+            <h1 class="page-title"><i class="fa-solid fa-list-check" style="color:var(--primary-light);"></i> Transaction Ledger</h1>
+            <div class="status-pill">
+                <span class="status-dot"></span> <span id="pending-count">0</span> Actions Required
+            </div>
+        </div>
+
+        <div class="request-grid" id="request-container">
+            <div class="empty-state">
+                <i class="fa-solid fa-spinner fa-spin empty-icon"></i>
+                <p>Syncing secure ledger...</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="app-footer">
+        Epoch19 Admin System &copy; 2025
+    </footer>
+
+    <!-- PWA INSTALL -->
+    <div id="pwa-install-popup" style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: #1e293b; border: 1px solid var(--primary-base); border-radius: 20px; padding: 20px; z-index: 3000; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
+        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+            <div style="width: 50px; height: 50px; border-radius: 12px; background: var(--primary-gradient); display: grid; place-items: center; font-size: 1.5rem; color: #fff;"><i class="fas fa-file-invoice-dollar"></i></div>
+            <div><div style="font-weight:700; color:#fff; font-size:1rem;">Revenue Control</div><div style="font-size:0.8rem; color:#94A3B8;">Install app for instant approval access.</div></div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button onclick="installPWA()" style="flex: 2; padding: 10px; background: var(--primary-gradient); border: none; border-radius: 10px; font-weight: 700; cursor: pointer; color: #fff;">Install</button>
+            <button onclick="dismissPWA()" style="flex: 1; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: var(--text-muted); cursor: pointer;">Later</button>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script type="module">
+        import { auth, db } from './firebase-config.js';
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+        import { collection, query, where, orderBy, onSnapshot, doc, getDoc, writeBatch, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+
+        let currentUser = null;
+
+        // UI Helpers
+        window.toggleSidebar = () => { document.getElementById('sidebar').classList.toggle('active'); document.getElementById('overlay').style.display = 'block'; };
+        window.closeSidebar = () => { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').style.display = 'none'; };
+        window.logout = () => signOut(auth).then(() => window.location.href = "index.html");
+
+        // 1. Auth Guard
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.href = "login.html"; return; }
+            try {
+                const userRef = doc(db, "users", user.uid);
+                const userSnap = await getDoc(userRef);
+                if (!userSnap.exists() || userSnap.data().role !== 'admin') {
+                    window.location.href = "dashboard.html";
+                } else {
+                    currentUser = user;
+                    const fallback = document.getElementById('header-avatar-fallback');
+                    if(fallback) fallback.innerText = (userSnap.data().fullName || 'A').charAt(0).toUpperCase();
+                    loadAllHistory();
+                }
+            } catch (e) { console.error("Auth Error", e); }
+        });
+
+        // 2. Load History
+        function loadAllHistory() {
+            const container = document.getElementById('request-container');
+            const q = query(collection(db, "payment_requests"), orderBy("createdAt", "desc"));
+
+            onSnapshot(q, (snapshot) => {
+                let pendingCount = 0;
+                let html = "";
+
+                if (snapshot.empty) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fa-solid fa-ghost empty-icon"></i>
+                            <p>No transaction history found.</p>
+                        </div>`;
+                    document.getElementById('pending-count').innerText = 0;
+                    return;
+                }
+                
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const reqId = docSnap.id;
+                    const createdTime = data.createdAt ? new Date(data.createdAt.seconds*1000).toLocaleString() : 'Just now';
+                    
+                    if(data.status === 'pending') pendingCount++;
+
+                    let statusClass = `status-${data.status}`;
+                    let actionArea = "";
+                    
+                    if(data.status === 'pending') {
+                        actionArea = `
+                            <div class="req-actions">
+                                <button class="btn-action btn-reject" onclick="rejectPayment('${reqId}')">
+                                    <i class="fa-solid fa-xmark"></i> Reject
+                                </button>
+                                <button class="btn-action btn-approve" onclick="approvePayment('${reqId}', '${data.userId}')">
+                                    <i class="fa-solid fa-check"></i> Approve
+                                </button>
+                            </div>`;
+                    } else if (data.status === 'approved') {
+                        actionArea = `
+                            <div class="status-badge badge-approved">
+                                <i class="fa-solid fa-circle-check"></i> APPROVED
+                            </div>`;
+                    } else if (data.status === 'rejected') {
+                        actionArea = `
+                            <div class="status-badge badge-rejected">
+                                <i class="fa-solid fa-circle-xmark"></i> REJECTED
+                            </div>`;
+                    }
+
+                    html += `
+                        <div class="req-card ${statusClass} animate__animated animate__fadeIn" id="card-${reqId}">
+                            <div class="req-header">
+                                <div class="req-user">
+                                    <h3>${data.userName || 'Unknown'}</h3>
+                                    <p>${data.userEmail || 'No Email'}</p>
+                                </div>
+                                <div class="req-time">${createdTime}</div>
+                            </div>
+
+                            <div class="req-details">
+                                <div class="detail-row">
+                                    <span class="detail-label">Payer Name:</span>
+                                    <span class="detail-val val-txn">${data.payerName || 'N/A'}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">PayPal Email:</span>
+                                    <span class="detail-val">${data.payerEmail || 'N/A'}</span>
+                                </div>
+                            </div>
+                            ${actionArea}
+                        </div>`;
+                });
+
+                container.innerHTML = html;
+                document.getElementById('pending-count').innerText = pendingCount;
+
+            }, (error) => {
+                container.innerHTML = `<div class="empty-state"><p style="color:#EF4444">Connection Error.</p></div>`;
+            });
+        }
+
+        // 3. APPROVE LOGIC
+        window.approvePayment = async (reqId, userId) => {
+            const btn = document.querySelector(`#card-${reqId} .btn-approve`);
+            if(btn) { btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`; btn.disabled = true; }
+            
+            try {
+                if (!userId) throw new Error("Missing User ID.");
+
+                const batch = writeBatch(db);
+                const reqRef = doc(db, "payment_requests", reqId);
+                const userRef = doc(db, "users", userId);
+                
+                batch.update(reqRef, { 
+                    status: 'approved',
+                    resolvedAt: serverTimestamp(),
+                    adminId: currentUser.uid
+                });
+                batch.update(userRef, { status: 'premium' });
+
+                await batch.commit();
+                
+                Swal.fire({
+                    toast: true, position: 'top-end', icon: 'success', 
+                    title: 'Access Granted', background: '#0f172a', color:'#fff', timer: 1500, showConfirmButton: false
+                });
+
+            } catch (error) {
+                if(btn) { btn.innerHTML = `<i class="fa-solid fa-check"></i> Approve`; btn.disabled = false; }
+                Swal.fire({ icon: 'error', title: 'Failed', text: error.message, background: '#0f172a', color: '#fff' });
+            }
+        };
+
+        // 4. REJECT LOGIC
+        window.rejectPayment = (reqId) => {
+            Swal.fire({
+                title: 'Reject Request?',
+                text: "The record will be marked as REJECTED in history.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#EF4444',
+                cancelButtonColor: '#1e293b',
+                background: '#0f172a', color: '#fff'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    try {
+                        const reqRef = doc(db, "payment_requests", reqId);
+                        await updateDoc(reqRef, {
+                            status: 'rejected',
+                            resolvedAt: serverTimestamp(),
+                            adminId: currentUser.uid
+                        });
+                        Swal.fire({
+                            toast: true, position: 'top-end', icon: 'info', 
+                            title: 'Rejected', background: '#0f172a', color:'#fff', timer: 1500, showConfirmButton: false
+                        });
+                    } catch (e) {
+                        Swal.fire('Error', e.message, 'error');
+                    }
+                }
+            });
+        };
+
+        // --- PWA ---
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; setTimeout(() => document.getElementById('pwa-install-popup').style.display = 'block', 3000); });
+        window.installPWA = async () => { if(deferredPrompt) { deferredPrompt.prompt(); const {outcome} = await deferredPrompt.userChoice; if(outcome==='accepted') document.getElementById('pwa-install-popup').style.display = 'none'; deferredPrompt=null; }};
+        window.dismissPWA = () => document.getElementById('pwa-install-popup').style.display = 'none';
+        if("serviceWorker" in navigator) navigator.serviceWorker.register("./service-worker.js").catch(()=>{});
+    </script>    
+</body>
+</html>

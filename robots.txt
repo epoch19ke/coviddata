@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /dashboard.html
+Disallow: /admin-*.html
+Disallow: /verify-email.html
+Disallow: /reset-password.html
+
+Sitemap: https://epoch19.com/sitemap.xml

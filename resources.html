@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Intelligence Feed | Epoch19</title>
+    
+    <!-- PWA Manifest & Meta -->
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" type="image/svg+xml" href="./assets/images/favicon.svg">
+    <meta name="theme-color" content="#1e293b">
+    
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@800&family=Playfair+Display:ital,wght@0,600;1,600&family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        :root {
+            /* Theme Variables */
+            --bg-body: #0f172a;       
+            --bg-glass: rgba(30, 41, 59, 0.7);
+            --text-main: #F1F5F9;     
+            --text-muted: #94A3B8; 
+            
+            /* THEME: Vibrant Purple (FK Style) */
+            --primary-base: #7C3AED;  
+            --primary-light: #A78BFA; 
+            --primary-gradient: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%);
+            
+            --success: #10B981;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+            --gold: #F59E0B;
+            
+            --sidebar-width: 260px; 
+            --header-height: 70px;
+            --radius: 16px;
+            
+            /* Fonts */
+            --font-head: 'Cinzel', serif;
+            --font-body: 'Inter', sans-serif;
+            --font-display: 'Space Grotesk', sans-serif;
+            --font-mono: 'Space Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            font-family: var(--font-body); 
+            background-color: var(--bg-body); 
+            background: url('./assets/images/background.png') no-repeat center center fixed;
+            background-size: cover;
+            color: var(--text-main); 
+            min-height: 100vh; 
+            overflow-x: hidden;
+            display: flex; flex-direction: column;
+        }
+
+        /* --- LOADER --- */
+        #global-loader {
+            position: fixed; inset: 0; z-index: 9999;
+            background: #0f172a;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            transition: opacity 0.5s ease;
+        }
+        .spinner-ring {
+            width: 60px; height: 60px;
+            border: 4px solid rgba(124, 58, 237, 0.2);
+            border-top: 4px solid var(--primary-base);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        .loader-text {
+            margin-top: 15px; font-family: var(--font-mono);
+            font-size: 0.9rem; color: var(--primary-light); letter-spacing: 2px;
+            animation: pulse 1.5s infinite;
+        }
+
+        /* --- HEADER --- */
+        header {
+            position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height);
+            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 24px; z-index: 1000;
+        }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        
+        .logo { 
+            font-family: var(--font-head); font-weight: 700; color: #ffffff; 
+            font-size: 1.5rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; 
+        }
+        .logo span { color: var(--primary-light); font-weight: 700; }
+        .user-badge {
+            background: rgba(255, 255, 255, 0.05); color: var(--text-muted);
+            padding: 2px 8px; border-radius: 4px; font-size: 0.6rem;
+            font-weight: 700; text-transform: uppercase; margin-left: 5px; vertical-align: middle;
+            font-family: var(--font-body); border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .user-avatar-sm { width: 42px; height: 42px; border-radius: 12px; background: var(--primary-gradient); display: grid; place-items: center; font-weight: 700; color: #fff; cursor: pointer; }
+
+        /* --- SIDEBAR --- */
+        .sidebar { 
+            position: fixed; top: var(--header-height); left: 0; 
+            width: var(--sidebar-width); height: calc(100vh - var(--header-height)); 
+            background: rgba(15, 23, 42, 0.95); border-right: 1px solid rgba(255,255,255,0.05); 
+            padding: 20px 0; overflow-y: auto; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            z-index: 999; display: flex; flex-direction: column; backdrop-filter: blur(20px); 
+            transform: translateX(0); 
+        }
+        
+        main { 
+            margin-left: var(--sidebar-width); margin-top: var(--header-height); 
+            padding: 40px; width: calc(100% - var(--sidebar-width)); flex: 1; 
+            transition: all 0.3s ease; max-width: 1400px;
+        }
+
+        .hamburger { font-size: 1.4rem; cursor: pointer; color: var(--text-muted); display: none; }
+        
+        .nav-group { padding: 0 24px; margin-bottom: 20px; }
+        .nav-label { font-size: 0.7rem; text-transform: uppercase; color: var(--primary-base); font-weight: 700; margin-bottom: 8px; }
+        .nav-item { display: flex; align-items: center; padding: 12px 14px; color: var(--text-muted); text-decoration: none; font-size: 0.9rem; border-radius: 10px; margin-bottom: 4px; transition: 0.2s; }
+        .nav-item:hover { color: var(--text-main); background: rgba(255,255,255,0.05); transform: translateX(5px); }
+        .nav-item.active { background: linear-gradient(90deg, rgba(124, 58, 237, 0.15) 0%, transparent 100%); color: var(--primary-light); font-weight: 600; border-left: 3px solid var(--primary-base); }
+        .nav-item i { width: 25px; text-align: center; margin-right: 10px; }
+
+        @media (max-width: 1024px) {
+            .sidebar { transform: translateX(-100%); width: 280px; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
+            .sidebar.active { transform: translateX(0); }
+            main { margin-left: 0; width: 100%; padding: 25px; }
+            .hamburger { display: block; }
+        }
+
+        /* --- FEED LAYOUT --- */
+        .page-header {
+            margin-bottom: 2.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: 1.5rem;
+            display: flex; justify-content: space-between; align-items: end;
+            flex-wrap: wrap; gap: 1rem;
+        }
+        .page-header h1 { font-size: 1.8rem; font-weight: 700; color: #fff; margin-bottom: 5px; font-family: var(--font-head); }
+        .page-header p { color: var(--primary-light); font-family: var(--font-mono); font-size: 0.85rem; letter-spacing: 1px; }
+
+        .resource-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        /* --- RESOURCE CARD --- */
+        .res-card {
+            background: var(--bg-glass);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: var(--radius);
+            padding: 0; /* Updated: Removed padding from parent to handle image flush */
+            position: relative; overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: fade-up 0.6s ease forwards;
+            opacity: 0;
+            display: flex; flex-direction: column;
+            backdrop-filter: blur(12px);
+            border-top: 4px solid var(--primary-base); /* Default Border Color */
+        }
+        
+        .res-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(255,255,255,0.1);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+        }
+
+        /* Image Container */
+        .res-img-container {
+            width: 100%; height: 180px; background: #0f172a; position: relative; overflow: hidden;
+        }
+        .res-img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+        .res-card:hover .res-img { transform: scale(1.05); }
+
+        /* Card Content */
+        .res-content-box {
+            padding: 1.5rem;
+            display: flex; flex-direction: column; flex-grow: 1;
+            position: relative;
+        }
+
+        .meta-row {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 1rem; font-size: 0.8rem; color: var(--text-muted);
+            font-family: var(--font-mono); letter-spacing: 0.5px;
+        }
+        .badge-new {
+            background: rgba(239, 68, 68, 0.1); color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 2px 8px; border-radius: 4px;
+            font-weight: 700; font-size: 0.65rem;
+            animation: pulse 2s infinite;
+        }
+        
+        .res-title {
+            font-size: 1.2rem; font-weight: 600; line-height: 1.4;
+            margin-bottom: 0.8rem; color: #fff; z-index: 1;
+            font-family: var(--font-display);
+        }
+
+        .res-summary {
+            font-size: 0.9rem; color: var(--text-muted); line-height: 1.6;
+            margin-bottom: 1.5rem; flex-grow: 1; z-index: 1;
+        }
+
+        /* Buttons */
+        .btn-action {
+            align-self: flex-start;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: var(--primary-light);
+            text-decoration: none;
+            font-weight: 700; font-size: 0.85rem;
+            display: inline-flex; align-items: center; gap: 8px;
+            transition: 0.3s; z-index: 2; font-family: var(--font-mono);
+        }
+        .btn-action:hover {
+            background: var(--primary-base); color: #fff;
+            border-color: var(--primary-base);
+        }
+
+        /* Type Variations (Matched with Admin) */
+        .type-pdf { border-top-color: var(--danger); }
+        .type-pdf .btn-action { color: var(--danger); background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); }
+        .type-pdf .btn-action:hover { background: var(--danger); color: #fff; }
+
+        .type-alert { border-top-color: var(--gold); }
+        .type-alert .btn-action { color: var(--gold); background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3); }
+        .type-alert .btn-action:hover { background: var(--gold); color: #000; }
+
+        /* Animations */
+        @keyframes fade-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* --- FOOTER --- */
+        footer {
+            margin-top: auto; border-top: 1px solid rgba(255,255,255,0.05);
+            padding: 2.5rem 5% 1.5rem; background: #0f172a;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            gap: 1.5rem; text-align: center;
+        }
+        .footer-socials { display: flex; gap: 25px; }
+        .footer-socials a {
+            color: var(--text-muted); font-size: 1.6rem;
+            transition: all 0.3s ease; width: 50px; height: 50px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%; background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255,255,255,0.1); text-decoration: none;
+        }
+        .footer-socials a:hover {
+            color: #fff; background: var(--primary-base);
+            border-color: var(--primary-base); transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(124, 58, 237, 0.3);
+        }
+        .copyright-text { font-family: var(--font-mono); opacity: 0.6; font-size: 0.8rem; letter-spacing: 0.5px; }
+
+        @media (max-width: 768px) {
+            .page-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+            .btn-action { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- PRELOADER -->
+    <div id="global-loader">
+        <div class="spinner-ring"></div>
+        <div class="loader-text">ESTABLISHING UPLINK...</div>
+    </div>
+
+    <!-- HEADER -->
+    <header>
+        <div class="header-left">
+            <i class="fas fa-bars hamburger" onclick="toggleSidebar()"></i>
+            <a href="dashboard.html" class="logo">EPOCH<span>19</span> <span class="user-badge">INTEL</span></a>
+        </div>
+        
+        <div class="header-actions">
+            <div class="user-avatar-sm" id="header-avatar-fallback">U</div>
+        </div>
+    </header>
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar" id="sidebar">
+        <div class="nav-group">
+            <div class="nav-label">Navigation</div>
+            <a href="dashboard.html" class="nav-item"><i class="fa-solid fa-grid-2"></i> Dashboard</a>
+            <a href="database.html" class="nav-item"><i class="fa-solid fa-database"></i> Data Archive</a>
+            <a href="resources.html" class="nav-item active"><i class="fa-solid fa-newspaper"></i> Resources</a>
+        </div>
+        <div class="nav-group">
+            <div class="nav-label">Account</div>
+            <a href="settings.html" class="nav-item"><i class="fa-solid fa-gear"></i> Settings</a>
+            <a href="upgrade.html" class="nav-item" style="color: var(--gold);"><i class="fa-solid fa-crown"></i> Upgrade</a>
+            <a href="#" onclick="logout()" class="nav-item" style="color:var(--danger); margin-top:10px;"><i class="fa-solid fa-power-off"></i> Logout</a>
+        </div>
+    </nav>
+    <div class="overlay" id="overlay" onclick="closeSidebar()" style="position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:998; display:none;"></div>
+
+    <!-- MAIN CONTENT -->
+    <main>
+        <div class="page-header animate__animated animate__fadeInDown">
+            <div>
+                <h1>Intelligence Feed</h1>
+                <p>VERIFIED REPORTS & GLOBAL SITREPS</p>
+            </div>
+            <!-- Filter -->
+            <div style="color: var(--text-muted); font-size: 0.85rem; display: flex; align-items: center; gap: 10px; border: 1px solid rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 8px; background: rgba(0,0,0,0.2); font-family: var(--font-mono);">
+                <i class="fa-solid fa-arrow-down-wide-short"></i> SORT: MOST RECENT
+            </div>
+        </div>
+
+        <div class="resource-grid" id="feed-container">
+            <!-- Dynamic Content Loaded via JS -->
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-socials">
+            <a id="link-email" href="#" title="Email Support"><i class="fa-regular fa-envelope"></i></a>
+            <a id="link-whatsapp" href="#" title="WhatsApp Support"><i class="fa-brands fa-whatsapp"></i></a>
+        </div>
+        <div class="copyright-text">
+            Epoch19 Data Archive &copy; 2025
+        </div>
+    </footer>
+
+    <!-- PWA INSTALL POPUP -->
+    <div id="pwa-install-popup" style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: #1e293b; border: 1px solid var(--primary-base); border-radius: 20px; padding: 20px; z-index: 3000; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
+        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+            <div style="width: 50px; height: 50px; border-radius: 12px; background: var(--primary-gradient); display: grid; place-items: center; font-size: 1.5rem; color: #fff;"><i class="fas fa-newspaper"></i></div>
+            <div><div style="font-weight:700; color:#fff; font-size:1rem;">Epoch19 Intel</div><div style="font-size:0.8rem; color:#94A3B8;">Install app for quick access.</div></div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button onclick="installPWA()" style="flex: 2; padding: 10px; background: var(--primary-gradient); border: none; border-radius: 10px; font-weight: 700; cursor: pointer; color: #fff;">Install</button>
+            <button onclick="dismissPWA()" style="flex: 1; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: var(--text-muted); cursor: pointer;">Later</button>
+        </div>
+    </div>
+
+    <!-- LOGIC -->
+    <script type="module">
+        import { auth, db } from './firebase-config.js';
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+        import { collection, query, orderBy, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+
+        // UI Helpers
+        window.toggleSidebar = () => { document.getElementById('sidebar').classList.toggle('active'); document.getElementById('overlay').style.display = 'block'; };
+        window.closeSidebar = () => { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').style.display = 'none'; };
+        window.logout = () => signOut(auth).then(() => window.location.href = "index.html");
+
+        // 1. Auth Guard
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = "login.html";
+            } else {
+                // Set Header Avatar
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if(userDoc.exists()) {
+                    const initials = (userDoc.data().fullName || 'U').charAt(0).toUpperCase();
+                    document.getElementById('header-avatar-fallback').innerText = initials;
+                }
+
+                loadResources();
+                loadFooterLinks();
+                
+                const loader = document.getElementById('global-loader');
+                loader.style.opacity = '0';
+                setTimeout(() => { loader.style.display = 'none'; }, 500);
+            }
+        });
+
+        // 2. Load Resources (Matching Admin Fields)
+        async function loadResources() {
+            const container = document.getElementById('feed-container');
+            
+            try {
+                // Fetching from 'resources' collection, sorted by createdAt desc
+                const q = query(collection(db, "resources"), orderBy("createdAt", "desc"));
+                const querySnapshot = await getDocs(q);
+
+                container.innerHTML = ""; 
+
+                if (querySnapshot.empty) {
+                    container.innerHTML = `
+                        <div style="grid-column: 1/-1; text-align: center; padding: 4rem; color: var(--text-muted); display:flex; flex-direction:column; align-items:center;">
+                            <i class="fa-regular fa-folder-open" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.5;"></i>
+                            <p style="font-family: var(--font-mono);">NO INTELLIGENCE REPORTS FOUND.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let delay = 0; 
+
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    
+                    // Fields from Admin: title, content, imageUrl, link, type, createdAt
+                    const date = data.createdAt ? new Date(data.createdAt.seconds * 1000) : new Date();
+                    const isNew = (new Date() - date) / (1000 * 60 * 60 * 24) < 3; // New tag for 3 days
+                    const summaryText = data.content ? (data.content.length > 120 ? data.content.substring(0, 120) + "..." : data.content) : "No description available.";
+                    
+                    // Default Styling (Article)
+                    let typeClass = 'type-article'; // Default purple
+                    let btnText = 'Read Full Article';
+                    let btnIcon = 'fa-arrow-right';
+                    
+                    // Specific Styling based on 'type' field
+                    if (data.type === 'pdf') {
+                        typeClass = 'type-pdf';
+                        btnText = 'Download PDF';
+                        btnIcon = 'fa-download';
+                    } else if (data.type === 'alert') {
+                        typeClass = 'type-alert';
+                        btnText = 'View Alert';
+                        btnIcon = 'fa-triangle-exclamation';
+                    }
+
+                    // --- CRITICAL UPDATE: Point href to resources-details.html?id=... ---
+                    const html = `
+                        <div class="res-card ${typeClass}" style="animation-delay: ${delay}s">
+                            <div class="res-img-container">
+                                <img src="${data.imageUrl || './assets/images/kpibackground.png'}" class="res-img" loading="lazy" onerror="this.src='./assets/images/kpibackground.png'">
+                            </div>
+                            
+                            <div class="res-content-box">
+                                <div class="meta-row">
+                                    <span><i class="fa-regular fa-calendar"></i> ${date.toLocaleDateString()}</span>
+                                    ${isNew ? '<span class="badge-new">NEW</span>' : ''}
+                                </div>
+                                
+                                <div class="res-title">${data.title}</div>
+                                <div class="res-summary">${summaryText}</div>
+                                
+                                <a href="resources-details.html?id=${doc.id}" class="btn-action">
+                                    ${btnText} <i class="fa-solid ${btnIcon}"></i>
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                    
+                    container.insertAdjacentHTML('beforeend', html);
+                    delay += 0.1;
+                });
+
+            } catch (error) {
+                console.error("Feed Error:", error);
+                container.innerHTML = `<p style="color: var(--danger); grid-column: 1/-1; text-align:center;">CONNECTION ERROR: UNABLE TO RETRIEVE FEED.</p>`;
+            }
+        }
+
+        // 3. Footer Links
+        async function loadFooterLinks() {
+            try {
+                const configSnap = await getDoc(doc(db, "config", "main_settings"));
+                if (configSnap.exists()) {
+                    const data = configSnap.data();
+                    if(data.contact_email) document.getElementById('link-email').href = `mailto:${data.contact_email}`;
+                    if(data.contact_whatsapp) document.getElementById('link-whatsapp').href = `https://wa.me/${data.contact_whatsapp}`;
+                }
+            } catch (e) {}
+        }
+
+        // --- PWA ---
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; setTimeout(() => document.getElementById('pwa-install-popup').style.display = 'block', 3000); });
+        window.installPWA = async () => { if(deferredPrompt) { deferredPrompt.prompt(); const {outcome} = await deferredPrompt.userChoice; if(outcome==='accepted') document.getElementById('pwa-install-popup').style.display = 'none'; deferredPrompt=null; }};
+        window.dismissPWA = () => document.getElementById('pwa-install-popup').style.display = 'none';
+        if("serviceWorker" in navigator) navigator.serviceWorker.register("./service-worker.js").catch(()=>{});
+    </script>
+</body>
+</html>

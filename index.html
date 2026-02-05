@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Epoch19 | Global COVID-19 Data Archive</title>
+    
+    <!-- PWA Manifest & Meta -->
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#020617">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="assets/images/logo.png">
+    <link rel="icon" type="image/svg+xml" href="assets/images/favicon.svg">
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        /* --- 1. CONFIGURATION --- */
+        :root {
+            --bg-deep: #020617;
+            --primary: #7C3AED;
+            --primary-hover: #6D28D9;
+            --primary-gradient: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%);
+            --accent: #A78BFA;
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --glass-surface: rgba(30, 41, 59, 0.4);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --font-ui: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-ui);
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+        }
+
+        /* --- 2. GLOBAL BACKGROUND (CSS ONLY - NO IMAGES) --- */
+        .bg-wrapper {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -5;
+            /* DEEP PURPLE/BLUE GRADIENT FALLBACK */
+            background: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #020617 60%);
+        }
+
+        /* Cyber Grid Animation */
+        .grid-plane {
+            position: fixed; bottom: -20%; left: -50%; width: 200%; height: 80%;
+            background-image: 
+                linear-gradient(rgba(124, 58, 237, 0.15) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(124, 58, 237, 0.15) 1px, transparent 1px);
+            background-size: 60px 60px;
+            transform: perspective(500px) rotateX(60deg);
+            animation: gridMove 20s linear infinite;
+            z-index: -4;
+            mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 80%);
+            pointer-events: none;
+        }
+
+        @keyframes gridMove {
+            0% { transform: perspective(500px) rotateX(60deg) translateY(0); }
+            100% { transform: perspective(500px) rotateX(60deg) translateY(60px); }
+        }
+
+        /* --- 3. NAVIGATION --- */
+        nav {
+            position: fixed; top: 0; width: 100%; z-index: 100;
+            padding: 1.2rem 5%;
+            display: flex; justify-content: space-between; align-items: center;
+            backdrop-filter: blur(12px);
+            background: rgba(2, 6, 23, 0.6);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s ease;
+        }
+        nav.scrolled { padding: 0.8rem 5%; background: rgba(2, 6, 23, 0.95); border-bottom: 1px solid var(--glass-border); }
+
+        .logo { 
+            display: flex; align-items: center; gap: 12px; 
+            font-weight: 800; font-size: 1.3rem; letter-spacing: -0.5px;
+            color: #fff; text-decoration: none;
+        }
+        .logo img { height: 32px; filter: drop-shadow(0 0 10px rgba(124, 58, 237, 0.5)); }
+        .logo span span { color: var(--primary); }
+
+        /* Sign In Button */
+        .btn-signin {
+            position: relative;
+            padding: 0.6rem 1.4rem;
+            border: 1px solid var(--glass-border);
+            border-radius: 50px;
+            color: var(--text-main);
+            text-decoration: none;
+            font-size: 0.9rem; font-weight: 600;
+            background: rgba(255,255,255,0.05);
+            transition: 0.3s;
+            white-space: nowrap;
+            display: flex; align-items: center; justify-content: center;
+            min-width: 100px;
+        }
+        .btn-signin:hover { 
+            background: var(--primary); 
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(124, 58, 237, 0.4);
+            transform: translateY(-1px);
+        }
+
+        /* --- 4. HERO SECTION (CSS ONLY) --- */
+        .hero {
+            position: relative;
+            min-height: 90vh;
+            padding: 140px 5% 80px 5%;
+            display: flex; align-items: center; 
+            /* NO EXTERNAL IMAGE - PURE CSS GRADIENT */
+            background: radial-gradient(circle at top right, rgba(124, 58, 237, 0.15), transparent 40%);
+        }
+        
+        .hero-glow {
+            position: absolute; top: 20%; right: -10%;
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(124, 58, 237, 0.15) 0%, transparent 70%);
+            filter: blur(80px); z-index: 1; pointer-events: none;
+        }
+
+        .hero-content { 
+            flex: 1; max-width: 700px; z-index: 2; position: relative; 
+        }
+
+        .badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 16px;
+            background: rgba(124, 58, 237, 0.1);
+            border: 1px solid rgba(124, 58, 237, 0.3);
+            color: var(--accent); border-radius: 30px;
+            font-size: 0.8rem; font-weight: 600; margin-bottom: 1.5rem;
+            font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 1px;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        .badge::before { content:''; display:block; width:6px; height:6px; background:var(--primary); border-radius:50%; box-shadow:0 0 8px var(--primary); }
+
+        .hero h1 {
+            font-size: 4.2rem; line-height: 1.1; font-weight: 800;
+            margin-bottom: 1.5rem; letter-spacing: -2px;
+            color: #fff;
+        }
+        .text-gradient {
+            background: linear-gradient(135deg, #fff 40%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 40px rgba(124, 58, 237, 0.2);
+        }
+
+        .hero p {
+            font-size: 1.2rem; color: var(--text-muted);
+            margin-bottom: 2.5rem; line-height: 1.7;
+            max-width: 600px; font-weight: 400;
+        }
+
+        /* Hero Action Button with Loader support */
+        .btn-hero-action {
+            position: relative;
+            padding: 1.1rem 2.5rem;
+            background: var(--primary);
+            color: white; text-decoration: none;
+            border-radius: 12px; font-weight: 700; font-size: 1.05rem;
+            box-shadow: 0 10px 30px -5px rgba(124, 58, 237, 0.4);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
+            display: inline-flex; align-items: center; gap: 10px;
+            white-space: nowrap; border: 1px solid rgba(255,255,255,0.1);
+            min-width: 220px; justify-content: center;
+        }
+        .btn-hero-action:hover { 
+            background: var(--primary-hover);
+            transform: translateY(-4px); 
+            box-shadow: 0 20px 40px -5px rgba(124, 58, 237, 0.6);
+            border-color: rgba(255,255,255,0.2);
+        }
+        .btn-hero-action i { font-size: 1.3rem; transition: transform 0.3s; }
+        .btn-hero-action:hover i { transform: translateX(5px); }
+
+        /* Loader Styles */
+        .loader {
+            display: none;
+            width: 18px; height: 18px;
+            border: 2px solid #fff;
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        .btn-loading .btn-text, .btn-loading i { display: none; }
+        .btn-loading .loader { display: block; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* --- 5. LIVE TICKER --- */
+        .ticker-wrap {
+            width: 100%; background: rgba(2, 6, 23, 0.8);
+            border-top: 1px solid var(--glass-border);
+            border-bottom: 1px solid var(--glass-border);
+            overflow: hidden; white-space: nowrap;
+            padding: 14px 0;
+            position: relative; z-index: 5;
+            backdrop-filter: blur(16px);
+            margin-top: -40px; 
+        }
+        .ticker { display: inline-block; animation: ticker 40s linear infinite; }
+        .ticker-item {
+            display: inline-block; padding: 0 3rem;
+            color: var(--text-muted); font-family: var(--font-mono); font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+        .ticker-item span { color: var(--accent); font-weight: 700; text-shadow: 0 0 10px rgba(167, 139, 250, 0.3); }
+        
+        @keyframes ticker { 
+            0% { transform: translateX(0); } 
+            100% { transform: translateX(-50%); } 
+        }
+
+        /* --- 6. STATS SECTION --- */
+        .stats-section {
+            padding: 4rem 5%;
+            background: linear-gradient(180deg, rgba(2,6,23,0) 0%, rgba(15,23,42,0.4) 100%);
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .stats-grid {
+            max-width: 1200px; margin: 0 auto;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 2rem; text-align: center;
+        }
+        .stat-item { padding: 1rem; }
+        .stat-item h3 {
+            font-size: 3rem; font-weight: 800; color: var(--text-main);
+            margin-bottom: 0.5rem; letter-spacing: -1px;
+            background: linear-gradient(to bottom, #fff, #94A3B8);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .stat-item p { 
+            color: var(--primary); 
+            font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700;
+            opacity: 0.9;
+        }
+
+        /* --- 7. FEATURES GRID --- */
+        .features {
+            padding: 80px 5%;
+            max-width: 1300px; margin: 0 auto;
+            position: relative;
+        }
+        .section-header { text-align: center; margin-bottom: 4rem; }
+        .section-header h2 { font-size: 2.5rem; margin-bottom: 1rem; font-weight: 700; color: #fff; }
+        .section-header p { color: var(--text-muted); max-width: 600px; margin: 0 auto; font-size: 1.1rem; line-height: 1.6; }
+
+        .features-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: var(--glass-surface);
+            border: 1px solid var(--glass-border);
+            padding: 2.5rem; border-radius: 24px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative; overflow: hidden;
+            backdrop-filter: blur(20px);
+            transform-style: preserve-3d;
+        }
+        /* Mouse Spotlight Effect */
+        .feature-card::after {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(800px circle at var(--mouse-x) var(--mouse-y), rgba(255,255,255,0.06), transparent 40%);
+            opacity: 0; transition: opacity 0.5s; pointer-events: none;
+        }
+        .feature-card:hover::after { opacity: 1; }
+        
+        .feature-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(124, 58, 237, 0.5);
+            box-shadow: 0 20px 50px -10px rgba(0,0,0,0.5);
+        }
+        
+        .icon-box {
+            width: 56px; height: 56px;
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(124, 58, 237, 0.05));
+            border-radius: 14px; display: flex; align-items: center; justify-content: center;
+            color: var(--accent); font-size: 1.6rem; margin-bottom: 1.5rem;
+            border: 1px solid rgba(124, 58, 237, 0.2);
+            box-shadow: 0 8px 20px -5px rgba(124, 58, 237, 0.2);
+        }
+
+        .feature-card h3 { font-size: 1.35rem; margin-bottom: 1rem; color: #fff; font-weight: 700; letter-spacing: -0.5px; }
+        .feature-card p { font-size: 1rem; color: var(--text-muted); line-height: 1.65; }
+
+        /* --- 8. FOOTER --- */
+        footer {
+            border-top: 1px solid var(--glass-border);
+            padding: 3rem 5%; text-align: center;
+            background: #01040f;
+            font-size: 0.95rem; color: var(--text-muted);
+            margin-top: 4rem;
+        }
+        .footer-logo { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 1.5rem; color: white; font-weight: 700; font-size: 1.2rem; }
+        .footer-logo img { height: 28px; }
+        .footer-links a {
+            color: var(--text-muted); margin: 0 15px; text-decoration: none; transition:color 0.3s;
+        }
+        .footer-links a:hover { color: var(--primary); }
+
+        /* Scroll To Top Button */
+        .scroll-top {
+            position: fixed; bottom: 30px; right: 30px;
+            width: 50px; height: 50px;
+            background: rgba(124, 58, 237, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 1.5rem; cursor: pointer;
+            opacity: 0; pointer-events: none; transition: 0.3s;
+            z-index: 999;
+        }
+        .scroll-top.active { opacity: 1; pointer-events: auto; }
+        .scroll-top:hover { background: var(--primary); transform: translateY(-5px); }
+
+        /* Animations */
+        .reveal { opacity: 0; transform: translateY(40px); transition: all 0.8s ease; }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+        @keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* Mobile Adjustments */
+        @media (max-width: 900px) {
+            .hero { 
+                min-height: auto;
+                flex-direction: column; text-align: center; padding-top: 120px; padding-bottom: 80px;
+            }
+            .hero-content { max-width: 100%; }
+            .hero h1 { font-size: 3rem; line-height: 1.2; }
+            .hero p { font-size: 1.1rem; margin-bottom: 2rem; }
+            .ticker-item { font-size: 0.8rem; padding: 0 1.5rem; }
+            .stats-grid { gap: 2rem; grid-template-columns: 1fr 1fr; }
+            .feature-card { padding: 2rem; }
+        }
+        @media (max-width: 480px) {
+            .hero h1 { font-size: 2.4rem; }
+            .btn-hero-action { width: 100%; justify-content: center; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .scroll-top { bottom: 20px; right: 20px; width: 40px; height: 40px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Global Background Elements -->
+    <div class="bg-wrapper"></div>
+    <div class="grid-plane"></div>
+    <div class="hero-glow"></div>
+
+    <!-- Nav -->
+    <nav id="navbar">
+        <a href="index.html" class="logo">
+            <img src="assets/images/logo.png" alt="Icon">
+            <span>Epoch<span>19</span></span>
+        </a>
+        <!-- Sign In Button with Loader ID -->
+        <a href="login.html" class="btn-signin" id="nav-signin-btn" onclick="animateButton(this, 'login.html')">
+            <span class="btn-text">Sign In</span>
+            <span class="loader"></span>
+        </a>
+    </nav>
+
+    <!-- Main Hero -->
+    <main class="hero">
+        <div class="hero-content reveal active">
+            <span class="badge">SECURE DATA ARCHIVE v2.0</span>
+            <h1>The Definitive <br><span class="text-gradient">COVID-19 Archive</span></h1>
+            <p>
+                Access verified historical pandemic data. Engineered for medical professionals, researchers, and government institutes. Granular, immutable, and secure.
+            </p>
+            
+            <!-- Hero Action Button with Loader ID -->
+            <a href="signup.html" class="btn-hero-action" id="hero-cta-btn" onclick="animateButton(this, 'signup.html')">
+                <span class="btn-text">Create Free Account</span>
+                <i class='bx bx-right-arrow-alt'></i>
+                <span class="loader"></span>
+            </a>
+        </div>
+    </main>
+
+    <!-- Animated Live Ticker -->
+    <div class="ticker-wrap">
+        <div class="ticker">
+            <div class="ticker-item">GLOBAL CASES: <span id="ticker-cases">LOADING...</span></div>
+            <div class="ticker-item">STATUS: <span>ARCHIVED & VERIFIED</span></div>
+            <div class="ticker-item">LAST SYNC: <span>2024-12-31</span></div>
+            <div class="ticker-item">NODES: <span>ONLINE</span></div>
+            <!-- Duplicates for seamless loop -->
+            <div class="ticker-item">GLOBAL CASES: <span id="ticker-cases-2">LOADING...</span></div>
+            <div class="ticker-item">STATUS: <span>ARCHIVED & VERIFIED</span></div>
+            <div class="ticker-item">LAST SYNC: <span>2024-12-31</span></div>
+        </div>
+    </div>
+
+    <!-- Stats Section -->
+    <section class="stats-section">
+        <div class="stats-grid">
+            <div class="stat-item reveal">
+                <h3 data-target="118">0</h3>
+                <p>Million Cases</p>
+            </div>
+            <div class="stat-item reveal">
+                <h3 data-target="192">0</h3>
+                <p>Countries</p>
+            </div>
+            <div class="stat-item reveal">
+                <h3 data-target="2400">0</h3>
+                <p>Data Points (B)</p>
+            </div>
+            <div class="stat-item reveal">
+                <h3>99.9%</h3>
+                <p>Uptime</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features" onmousemove="handleMouseMove(event)">
+        <div class="section-header reveal">
+            <h2>Why Choose Epoch19?</h2>
+            <p>Built on enterprise-grade infrastructure to ensure data integrity for generations.</p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card reveal">
+                <div class="icon-box"><i class='bx bx-check-shield'></i></div>
+                <h3>Verified Accuracy</h3>
+                <p>Data is cross-referenced with WHO and CDC historical archives to ensure absolute statistical accuracy.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="icon-box"><i class='bx bx-globe'></i></div>
+                <h3>Global Coverage</h3>
+                <p>Access granular data from over 190 countries, broken down by mild, serious, and fatal classifications.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="icon-box"><i class='bx bx-lock-alt'></i></div>
+                <h3>Secure Storage</h3>
+                <p>Enterprise-grade encryption ensures that sensitive historical data remains tampered-proof.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="icon-box"><i class='bx bx-api'></i></div>
+                <h3>API Access</h3>
+                <p>Connect your research models directly to our database via our high-throughput REST API.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="icon-box"><i class='bx bx-export'></i></div>
+                <h3>Export Anywhere</h3>
+                <p>Download datasets in CSV, JSON, or SQL formats compatible with Tableau, Excel, and Python Pandas.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="icon-box"><i class='bx bx-support'></i></div>
+                <h3>Priority Support</h3>
+                <p>Dedicated technical support for institute-level accounts ensuring your research never hits a bottleneck.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-logo">
+            <img src="assets/images/logo.png" alt="Logo">
+            Epoch19
+        </div>
+        <p>&copy; 2025 Epoch19 Global Data Archive. All rights reserved.</p>
+        <div class="footer-links" style="margin-top: 1.5rem; font-size: 0.85rem;">
+            <!-- Updated Links -->
+            <a href="privacy.html">Privacy Policy</a>
+            <a href="terms.html">Terms of Service</a>
+        </div>
+    </footer>
+
+    <!-- Scroll To Top -->
+    <div class="scroll-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+        <i class='bx bx-up-arrow-alt'></i>
+    </div>
+
+    <!-- PWA INSTALL POPUP (Restored) -->
+    <div id="pwa-install-popup" style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: #1e293b; border: 1px solid var(--primary); border-radius: 20px; padding: 20px; z-index: 3000; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
+        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+            <div style="width: 50px; height: 50px; border-radius: 12px; background: var(--primary-gradient); display: grid; place-items: center; font-size: 1.5rem; color: #fff;"><i class="fas fa-download"></i></div>
+            <div><div style="font-weight:700; color:#fff; font-size:1rem;">Install App</div><div style="font-size:0.8rem; color:#94A3B8;">Add to home screen for quick access.</div></div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button onclick="installPWA()" style="flex: 2; padding: 10px; background: var(--primary-gradient); border: none; border-radius: 10px; font-weight: 700; cursor: pointer; color: #fff;">Install</button>
+            <button onclick="dismissPWA()" style="flex: 1; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: var(--text-muted); cursor: pointer;">Later</button>
+        </div>
+    </div>
+
+    <!-- JS Logic -->
+    <script type="module">
+        import { auth, db } from './firebase-config.js';
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+
+        // 1. Auth Check
+        onAuthStateChanged(auth, (user) => {
+            if (user) window.location.href = "dashboard.html";
+        });
+
+        // 2. Fetch Dynamic Data from Firestore (Safe for unauthenticated)
+        async function fetchGlobalStats() {
+            // Note: Your security rules only allow 'config' reads if authenticated.
+            // Since this is the landing page (likely unauthenticated), we gracefully fail to default values
+            // to avoid "Permission Missing" console errors, unless the user happens to have a cached session.
+            if(auth.currentUser) {
+                try {
+                    const docRef = doc(db, "system", "global_stats");
+                    const docSnap = await getDoc(docRef);
+
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        const cases = data.totalCases ? data.totalCases.toLocaleString() + "+" : "118,000,000+";
+                        document.getElementById('ticker-cases').innerText = cases;
+                        document.getElementById('ticker-cases-2').innerText = cases;
+                    }
+                } catch (error) {
+                    console.log("Viewing as guest: displaying static archive data.");
+                    setDefaultStats();
+                }
+            } else {
+                setDefaultStats();
+            }
+        }
+
+        function setDefaultStats() {
+            const fallback = "118,000,000+";
+            document.getElementById('ticker-cases').innerText = fallback;
+            document.getElementById('ticker-cases-2').innerText = fallback;
+        }
+
+        fetchGlobalStats();
+
+        // 3. Navbar & Scroll Top Logic
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            const scrollTopBtn = document.querySelector('.scroll-top');
+            
+            if (window.scrollY > 30) {
+                nav.classList.add('scrolled');
+                scrollTopBtn.classList.add('active');
+            } else {
+                nav.classList.remove('scrolled');
+                scrollTopBtn.classList.remove('active');
+            }
+        });
+
+        // 4. Reveal Animation
+        const reveals = document.querySelectorAll('.reveal');
+        const revealOnScroll = () => {
+            const windowHeight = window.innerHeight;
+            const elementVisible = 80;
+            reveals.forEach((reveal) => {
+                const elementTop = reveal.getBoundingClientRect().top;
+                if (elementTop < windowHeight - elementVisible) {
+                    reveal.classList.add('active');
+                    if(reveal.querySelector('[data-target]')) startCounters(reveal);
+                }
+            });
+        };
+        window.addEventListener('scroll', revealOnScroll);
+        revealOnScroll();
+
+        // 5. Counter Animation
+        let countersStarted = false;
+        function startCounters(container) {
+            if(countersStarted) return;
+            const counters = container.querySelectorAll('[data-target]');
+            if(counters.length === 0) return;
+            countersStarted = true;
+            counters.forEach(counter => {
+                const target = +counter.getAttribute('data-target');
+                const updateCount = () => {
+                    const count = +counter.innerText;
+                    const inc = Math.ceil(target / 100);
+                    if (count < target) {
+                        counter.innerText = count + inc;
+                        setTimeout(updateCount, 20);
+                    } else {
+                        counter.innerText = target.toLocaleString();
+                    }
+                };
+                updateCount();
+            });
+        }
+
+        // 6. Interactive Mouse Glow for Cards
+        window.handleMouseMove = (e) => {
+            document.querySelectorAll(".feature-card").forEach((card) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty("--mouse-x", `${x}px`);
+                card.style.setProperty("--mouse-y", `${y}px`);
+            });
+        };
+
+        // 7. Advanced Button Spinner Logic
+        window.animateButton = (btn, url) => {
+            event.preventDefault(); // Stop immediate nav
+            
+            // Add loading class to show spinner
+            btn.classList.add('btn-loading');
+            
+            // Simulate network delay for effect (or wait for real auth if applicable)
+            setTimeout(() => {
+                window.location.href = url;
+            }, 800); // 800ms delay for smooth animation
+        };
+
+        // 8. PWA LOGIC (Restored from your dashboard code)
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => { 
+            e.preventDefault(); 
+            deferredPrompt = e; 
+            setTimeout(() => document.getElementById('pwa-install-popup').style.display = 'block', 3000); 
+        });
+        
+        window.installPWA = async () => { 
+            if(deferredPrompt) { 
+                deferredPrompt.prompt(); 
+                const {outcome} = await deferredPrompt.userChoice; 
+                if(outcome==='accepted') document.getElementById('pwa-install-popup').style.display = 'none'; 
+                deferredPrompt=null; 
+            }
+        };
+        
+        window.dismissPWA = () => document.getElementById('pwa-install-popup').style.display = 'none';
+        
+        if("serviceWorker" in navigator) navigator.serviceWorker.register("./service-worker.js").catch(()=>{});
+
+    </script>
+</body>
+</html>

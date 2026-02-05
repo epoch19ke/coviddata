@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Broadcast Center | Epoch19 Admin</title>
+    
+    <!-- PWA Manifest & Meta -->
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" type="image/svg+xml" href="./assets/images/favicon.svg">
+    <meta name="theme-color" content="#1e293b">
+    
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@800&family=Playfair+Display:ital,wght@0,600;1,600&family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        :root {
+            /* Theme Variables */
+            --bg-body: #0f172a;       
+            --bg-glass: rgba(30, 41, 59, 0.7);
+            --text-main: #F1F5F9;     
+            --text-muted: #94A3B8; 
+            
+            /* THEME: Vibrant Purple (FK Style) */
+            --primary-base: #7C3AED;  
+            --primary-light: #A78BFA; 
+            --primary-gradient: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%);
+            
+            --success: #10B981;
+            --success-gradient: linear-gradient(135deg, #34d399 0%, #059669 100%);
+            --danger: #EF4444;
+            --warning: #F59E0B;
+            
+            --ai-gradient: linear-gradient(135deg, #C084FC 0%, #7C3AED 100%); /* Purple AI Gradient */
+            
+            --sidebar-width: 260px; 
+            --header-height: 70px;
+            --radius: 16px;
+            
+            /* Fonts */
+            --font-head: 'Cinzel', serif;
+            --font-body: 'Inter', sans-serif;
+            --font-display: 'Space Grotesk', sans-serif;
+            --font-mono: 'Space Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            font-family: var(--font-body); 
+            background-color: var(--bg-body); 
+            background: url('./assets/images/background.png') no-repeat center center fixed;
+            background-size: cover;
+            color: var(--text-main); 
+            min-height: 100vh; 
+            overflow-x: hidden;
+            display: flex; flex-direction: column;
+        }
+
+        /* --- UI COMPONENTS --- */
+        .glass-panel { background: var(--bg-glass); backdrop-filter: blur(12px) saturate(180%); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius); }
+
+        /* --- HEADER --- */
+        header {
+            position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height);
+            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 24px; z-index: 1000;
+        }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        
+        .logo { 
+            font-family: var(--font-head); font-weight: 700; color: #ffffff; 
+            font-size: 1.5rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; 
+        }
+        .logo span { color: var(--primary-light); font-weight: 700; }
+        .admin-badge {
+            background: var(--primary-base); color: white;
+            padding: 2px 8px; border-radius: 4px; font-size: 0.6rem;
+            font-weight: 700; text-transform: uppercase; margin-left: 5px; vertical-align: middle;
+            font-family: var(--font-body);
+        }
+        
+        .user-avatar { width: 42px; height: 42px; border-radius: 12px; background: var(--primary-gradient); display: grid; place-items: center; font-weight: 700; color: #fff; cursor: pointer; }
+
+        /* --- SIDEBAR --- */
+        .sidebar { 
+            position: fixed; top: var(--header-height); left: 0; 
+            width: var(--sidebar-width); height: calc(100vh - var(--header-height)); 
+            background: rgba(15, 23, 42, 0.95); border-right: 1px solid rgba(255,255,255,0.05); 
+            padding: 20px 0; overflow-y: auto; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            z-index: 999; display: flex; flex-direction: column; backdrop-filter: blur(20px); 
+            transform: translateX(0); 
+        }
+        
+        main { 
+            margin-left: var(--sidebar-width); margin-top: var(--header-height); 
+            padding: 25px; width: calc(100% - var(--sidebar-width)); flex: 1; 
+            transition: all 0.3s ease; max-width: 1600px;
+            display: grid; grid-template-columns: 1.6fr 1fr; gap: 25px;
+        }
+
+        .hamburger { font-size: 1.4rem; cursor: pointer; color: var(--text-muted); display: none; }
+        
+        .nav-group { padding: 0 24px; margin-bottom: 20px; }
+        .nav-label { font-size: 0.7rem; text-transform: uppercase; color: var(--primary-base); font-weight: 700; margin-bottom: 8px; }
+        .nav-item { display: flex; align-items: center; padding: 12px 14px; color: var(--text-muted); text-decoration: none; font-size: 0.9rem; border-radius: 10px; margin-bottom: 4px; transition: 0.2s; }
+        .nav-item:hover { color: var(--text-main); background: rgba(255,255,255,0.05); transform: translateX(5px); }
+        .nav-item.active { background: linear-gradient(90deg, rgba(124, 58, 237, 0.15) 0%, transparent 100%); color: var(--primary-light); font-weight: 600; border-left: 3px solid var(--primary-base); }
+        .nav-item i { width: 25px; text-align: center; margin-right: 10px; }
+
+        @media (max-width: 1024px) {
+            .sidebar { transform: translateX(-100%); width: 280px; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
+            .sidebar.active { transform: translateX(0); }
+            main { margin-left: 0; width: 100%; padding: 15px; grid-template-columns: 1fr; }
+            .hamburger { display: block; }
+            .preview-panel { position: relative; top: 0; margin-top: 20px; }
+        }
+
+        /* --- AI PANEL --- */
+        .ai-panel {
+            background: linear-gradient(180deg, rgba(124, 58, 237, 0.1) 0%, rgba(15, 23, 42, 0) 100%);
+            border: 1px solid rgba(124, 58, 237, 0.4);
+            border-radius: var(--radius); padding: 1.5rem; margin-bottom: 2rem;
+            position: relative; overflow: hidden;
+            width: 100%;
+        }
+        .ai-panel::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+            background: var(--ai-gradient); animation: ai-scan 3s infinite linear;
+        }
+        @keyframes ai-scan { 0% { left: -100%; } 100% { left: 100%; } }
+
+        .ai-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 10px; }
+        .ai-title { font-family: var(--font-mono); color: var(--primary-light); font-size: 0.9rem; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; font-weight: 700; }
+        
+        .ai-input-group { display: flex; gap: 10px; flex-wrap: wrap; }
+        .ai-input {
+            flex: 1; min-width: 200px; background: rgba(0,0,0,0.4); border: 1px solid var(--primary-base);
+            color: #fff; padding: 12px 15px; border-radius: 10px; outline: none;
+            font-family: var(--font-body); transition: 0.3s;
+        }
+        .ai-input:focus { box-shadow: 0 0 15px rgba(124, 58, 237, 0.2); }
+        .btn-ai {
+            background: var(--ai-gradient); border: none; padding: 12px 20px;
+            color: #fff; border-radius: 10px; cursor: pointer; font-weight: 600;
+            display: flex; align-items: center; gap: 8px; transition: 0.3s; white-space: nowrap;
+        }
+        .btn-ai:hover { box-shadow: 0 0 15px rgba(192, 132, 252, 0.4); transform: translateY(-2px); }
+
+        /* --- EDITOR PANEL --- */
+        .editor-panel {
+            background: var(--bg-glass); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05);
+            border-radius: var(--radius); padding: 2rem; width: 100%;
+        }
+        .form-group { margin-bottom: 1.5rem; width: 100%; }
+        .form-label { display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.85rem; font-weight: 600; }
+        
+        .form-input, .form-textarea {
+            width: 100%; padding: 12px; background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;
+            color: #fff; font-family: var(--font-body); outline: none; transition: 0.3s;
+        }
+        .form-input:focus, .form-textarea:focus { border-color: var(--primary-light); background: rgba(255,255,255,0.05); }
+        .form-textarea { height: 150px; resize: vertical; line-height: 1.6; }
+        
+        /* Type Selector */
+        .type-selector { display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
+        .type-option { flex: 1; position: relative; min-width: 100px; }
+        .type-option input { position: absolute; opacity: 0; cursor: pointer; width:100%; height:100%; z-index: 2; }
+        .type-card {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px; padding: 1rem; text-align: center; transition: 0.3s;
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
+            height: 100%; justify-content: center; color: var(--text-muted);
+        }
+        .type-option input:checked + .type-card {
+            background: rgba(124, 58, 237, 0.15); border-color: var(--primary-base); color: var(--primary-light);
+            box-shadow: 0 0 15px rgba(124, 58, 237, 0.2);
+        }
+
+        .btn-publish {
+            width: 100%; padding: 14px; background: var(--primary-gradient);
+            color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700;
+            cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px;
+        }
+        .btn-publish:hover { box-shadow: 0 5px 20px rgba(124, 58, 237, 0.4); transform: translateY(-2px); }
+
+        /* --- PREVIEW PANEL --- */
+        .preview-panel { 
+            position: sticky; top: 100px; height: fit-content; width: 100%;
+        }
+        .res-card {
+            background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 0;
+            overflow: hidden; border-top: 4px solid var(--primary-base);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+        }
+        .res-img-container { width: 100%; height: 180px; background: #0f172a; position: relative; overflow: hidden; }
+        .res-img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+        .res-content { padding: 1.8rem; position: relative; }
+        .res-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; color: #fff; word-wrap: break-word; font-family: var(--font-display); }
+        .res-summary { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1.5rem; word-wrap: break-word; }
+        .btn-action-prev {
+            padding: 10px 20px; background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
+            color: var(--primary-light); font-weight: 600; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 8px;
+        }
+
+        .app-footer { margin-top: auto; padding: 30px 25px; background: #0f172a; border-top: 1px solid rgba(255,255,255,0.05); text-align: center; color: var(--text-muted); font-size: 0.8rem; }
+
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <div class="header-left">
+            <i class="fas fa-bars hamburger" onclick="toggleSidebar()"></i>
+            <a href="admin-dashboard.html" class="logo">EPOCH<span>19</span> <span class="admin-badge">ADMIN</span></a>
+        </div>
+        
+        <div class="header-actions">
+            <div class="user-avatar" id="header-avatar-fallback" onclick="location.href='admin-settings.html'">A</div>
+        </div>
+    </header>
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar" id="sidebar">
+        <div class="nav-group">
+            <div class="nav-label">Command Center</div>
+            <a href="admin-dashboard.html" class="nav-item"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+            <a href="admin-data.html" class="nav-item"><i class="fa-solid fa-database"></i> Data Manager</a>
+        </div>
+        <div class="nav-group">
+            <div class="nav-label">Operations</div>
+            <a href="admin-payments.html" class="nav-item"><i class="fa-solid fa-credit-card"></i> Payments</a>
+            <a href="admin-resources.html" class="nav-item active"><i class="fa-solid fa-bullhorn"></i> Broadcast</a>
+        </div>
+        <div class="nav-group">
+            <div class="nav-label">System</div>
+            <a href="admin-settings.html" class="nav-item"><i class="fa-solid fa-sliders"></i> Global Config</a>
+            <a href="dashboard.html" class="nav-item"><i class="fa-solid fa-eye"></i> User View</a>
+            <a href="#" onclick="logout()" class="nav-item" style="color:var(--danger); margin-top:10px;"><i class="fa-solid fa-power-off"></i> Logout</a>
+        </div>
+    </nav>
+    <div class="overlay" id="overlay" onclick="closeSidebar()" style="position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:998; display:none;"></div>
+
+    <!-- MAIN CONTENT -->
+    <main>
+        
+        <!-- LEFT COLUMN: INPUTS -->
+        <div class="animate__animated animate__fadeInLeft">
+            <!-- AI GENERATOR -->
+            <div class="ai-panel">
+                <div class="ai-header">
+                    <div class="ai-title"><i class="fa-solid fa-microchip"></i> EPOCH19 AI CORE</div>
+                    <div style="font-size: 0.7rem; color: var(--primary-light);">V 2.4.0 BETA</div>
+                </div>
+                <div class="ai-input-group">
+                    <input type="text" class="ai-input" id="ai-topic" placeholder="Enter topic (e.g., 'Cybersecurity', 'Climate')">
+                    <button class="btn-ai" onclick="generateAIContent()">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> AUTO-WRITE
+                    </button>
+                </div>
+            </div>
+
+            <!-- MANUAL FORM -->
+            <div class="editor-panel">
+                <div class="form-label">Resource Type</div>
+                <div class="type-selector">
+                    <label class="type-option">
+                        <input type="radio" name="resType" value="article" checked onchange="updatePreview()">
+                        <div class="type-card"><i class="fa-solid fa-earth-americas"></i><span>News</span></div>
+                    </label>
+                    <label class="type-option">
+                        <input type="radio" name="resType" value="pdf" onchange="updatePreview()">
+                        <div class="type-card"><i class="fa-solid fa-file-pdf"></i><span>PDF</span></div>
+                    </label>
+                    <label class="type-option">
+                        <input type="radio" name="resType" value="alert" onchange="updatePreview()">
+                        <div class="type-card"><i class="fa-solid fa-triangle-exclamation"></i><span>Alert</span></div>
+                    </label>
+                </div>
+
+                <form id="resource-form">
+                    <div class="form-group">
+                        <label class="form-label">Headline Title</label>
+                        <input type="text" class="form-input" id="inp-title" placeholder="Title..." required oninput="updatePreview()">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Cover Image URL (AI Generated)</label>
+                        <input type="url" class="form-input" id="inp-img" placeholder="https://..." required oninput="updatePreview()">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Full Content / Summary</label>
+                        <textarea class="form-textarea" id="inp-summary" placeholder="Content..." required oninput="updatePreview()"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">External Link (Optional)</label>
+                        <input type="url" class="form-input" id="inp-url" placeholder="https://..." value="https://epoch19.com/news">
+                    </div>
+
+                    <button type="submit" class="btn-publish" id="btn-submit">
+                        <i class="fa-solid fa-tower-broadcast"></i> Broadcast to Network
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN: PREVIEW -->
+        <div class="preview-panel animate__animated animate__fadeInRight" id="preview-wrapper">
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Live Preview</div>
+            
+            <div class="res-card">
+                <div class="res-img-container">
+                    <img src="./assets/images/welcomehero.png" class="res-img" id="prev-img" onerror="this.src='./assets/images/kpibackground.png'">
+                </div>
+                <div class="res-content">
+                    <div style="display:flex; justify-content:space-between; color: var(--text-muted); font-size: 0.75rem; margin-bottom:10px;">
+                        <span><i class="fa-regular fa-calendar"></i> Just Now</span>
+                        <span style="color:var(--danger); font-weight:700;">NEW</span>
+                    </div>
+                    <div class="res-title" id="prev-title">Headline Title</div>
+                    <div class="res-summary" id="prev-summary">Content description will appear here...</div>
+                    <div class="btn-action-prev" id="prev-btn">
+                        Read Full Article <i class="fa-solid fa-arrow-right"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="app-footer">
+        Epoch19 Admin System &copy; 2025
+    </footer>
+
+    <!-- PWA INSTALL -->
+    <div id="pwa-install-popup" style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: #1e293b; border: 1px solid var(--primary-base); border-radius: 20px; padding: 20px; z-index: 3000; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
+        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+            <div style="width: 50px; height: 50px; border-radius: 12px; background: var(--primary-gradient); display: grid; place-items: center; font-size: 1.5rem; color: #fff;"><i class="fas fa-pen-nib"></i></div>
+            <div><div style="font-weight:700; color:#fff; font-size:1rem;">Broadcast Center</div><div style="font-size:0.8rem; color:#94A3B8;">Install app for mobile reporting.</div></div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button onclick="installPWA()" style="flex: 2; padding: 10px; background: var(--primary-gradient); border: none; border-radius: 10px; font-weight: 700; cursor: pointer; color: #fff;">Install</button>
+            <button onclick="dismissPWA()" style="flex: 1; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: var(--text-muted); cursor: pointer;">Later</button>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script type="module">
+        import { auth, db } from './firebase-config.js';
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+        import { doc, getDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+
+        // UI Helpers
+        window.toggleSidebar = () => { document.getElementById('sidebar').classList.toggle('active'); document.getElementById('overlay').style.display = 'block'; };
+        window.closeSidebar = () => { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').style.display = 'none'; };
+        window.logout = () => signOut(auth).then(() => window.location.href = "index.html");
+
+        // 1. Auth Guard
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.href = "login.html"; return; }
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+            if (!userDoc.exists() || userDoc.data().role !== 'admin') {
+                window.location.href = "dashboard.html";
+            } else {
+                const fallback = document.getElementById('header-avatar-fallback');
+                if(fallback) fallback.innerText = (userDoc.data().fullName || 'A').charAt(0).toUpperCase();
+            }
+        });
+
+        // 2. AI ENGINE LOGIC
+        window.generateAIContent = async () => {
+            const topic = document.getElementById('ai-topic').value;
+            if (!topic) { Swal.fire({ icon: 'warning', title: 'Missing Input', text: 'Please enter a topic first.', background: '#0f172a', color: '#fff'}); return; }
+
+            const btn = document.querySelector('.btn-ai');
+            const originalText = btn.innerHTML;
+            
+            // Step 1: Visual "Thinking" Process
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> THINKING...`;
+            await wait(800);
+            
+            btn.innerHTML = `<i class="fa-solid fa-network-wired fa-beat"></i> SEARCHING...`;
+            await wait(800);
+            
+            btn.innerHTML = `<i class="fa-solid fa-pen-nib fa-shake"></i> WRITING...`;
+            await wait(1000);
+
+            // Step 2: Content Generation (Mock)
+            const currentDate = new Date().toLocaleDateString();
+            const keywords = topic.split(' ');
+            const mainKw = keywords[0].charAt(0).toUpperCase() + keywords[0].slice(1);
+
+            const generatedTitle = `Comprehensive Report: The State of ${topic.toUpperCase()} in ${new Date().getFullYear()}`;
+            
+            const generatedContent = `
+In an era defined by rapid technological shifts and global interconnectivity, the subject of ${topic} has emerged as a critical focal point for industry leaders and policymakers alike. As of ${currentDate}, data suggests a paradigm shift in how we approach ${mainKw}, driven largely by unforeseen market variables and evolving consumer behaviors.
+
+Our latest Epoch19 analysis indicates that ${topic} is no longer a peripheral concern but a core component of sustainable development. Experts argue that failing to adapt to these changes could result in significant systemic inefficiencies. "The integration of advanced methodologies in ${topic} is paramount," states Dr. Aris Thorne, Lead Analyst at the Global Data Consortium.
+
+Furthermore, statistics reveal a 40% increase in engagement surrounding ${topic}-related initiatives over the last quarter. This report delves deep into the mechanisms driving this trend, offering a granular view of the challenges and opportunities that lie ahead. By leveraging predictive modeling, we can anticipate that ${topic} will continue to shape the socioeconomic landscape for the next decade.
+
+In conclusion, stakeholders must prioritize agility and data-driven decision-making to navigate the complexities of ${topic}. This article outlines five key strategies for optimizing performance in this volatile sector.
+            `.trim();
+
+            const generatedImage = `https://source.unsplash.com/1600x900/?${encodeURIComponent(topic)},technology`;
+
+            // Step 4: Populate Form
+            document.getElementById('inp-title').value = generatedTitle;
+            document.getElementById('inp-summary').value = generatedContent;
+            document.getElementById('inp-img').value = generatedImage;
+            
+            updatePreview();
+
+            btn.innerHTML = `<i class="fa-solid fa-check"></i> DONE`;
+            btn.disabled = false;
+            setTimeout(() => { btn.innerHTML = originalText; }, 3000);
+
+            Swal.fire({
+                toast: true, position: 'top-end', icon: 'success', 
+                title: 'AI Content Generated', background: '#0f172a', color:'#fff', timer: 2000, showConfirmButton: false
+            });
+        };
+
+        const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        // 3. Preview Logic
+        window.updatePreview = () => {
+            const title = document.getElementById('inp-title').value || "Headline Title";
+            const summary = document.getElementById('inp-summary').value || "Content description...";
+            const imgUrl = document.getElementById('inp-img').value;
+            const type = document.querySelector('input[name="resType"]:checked').value;
+            
+            const prevTitle = document.getElementById('prev-title');
+            const prevSummary = document.getElementById('prev-summary');
+            const prevImg = document.getElementById('prev-img');
+            const prevBtn = document.getElementById('prev-btn');
+
+            prevTitle.innerText = title;
+            prevSummary.innerText = summary.length > 100 ? summary.substring(0, 100) + "..." : summary;
+            if(imgUrl) prevImg.src = imgUrl;
+
+            // Type Styles
+            if (type === 'pdf') {
+                document.querySelector('.res-card').style.borderTopColor = '#EF4444';
+                prevBtn.innerHTML = `Download PDF <i class="fa-solid fa-download"></i>`;
+                prevBtn.style.color = '#EF4444';
+            } else if (type === 'alert') {
+                document.querySelector('.res-card').style.borderTopColor = '#F59E0B';
+                prevBtn.innerHTML = `View Alert <i class="fa-solid fa-triangle-exclamation"></i>`;
+                prevBtn.style.color = '#F59E0B';
+            } else {
+                document.querySelector('.res-card').style.borderTopColor = '#7C3AED'; // Purple
+                prevBtn.innerHTML = `Read Full Article <i class="fa-solid fa-arrow-right"></i>`;
+                prevBtn.style.color = '#A78BFA';
+            }
+        };
+
+        // 4. Submit
+        document.getElementById('resource-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit');
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Transmitting...`;
+            btn.disabled = true;
+
+            try {
+                await addDoc(collection(db, "resources"), {
+                    title: document.getElementById('inp-title').value,
+                    content: document.getElementById('inp-summary').value,
+                    imageUrl: document.getElementById('inp-img').value,
+                    link: document.getElementById('inp-url').value,
+                    type: document.querySelector('input[name="resType"]:checked').value,
+                    createdAt: serverTimestamp()
+                });
+                
+                Swal.fire({ icon: 'success', title: 'Broadcast Sent', background: '#0f172a', color:'#fff', timer: 1500, showConfirmButton:false });
+                e.target.reset();
+                updatePreview();
+            } catch (err) {
+                console.error(err);
+                Swal.fire({icon: 'error', title: 'Error', text: err.message, background: '#0f172a', color: '#fff'});
+            } finally {
+                btn.innerHTML = `<i class="fa-solid fa-tower-broadcast"></i> Broadcast to Network`;
+                btn.disabled = false;
+            }
+        });
+
+        // --- PWA ---
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; setTimeout(() => document.getElementById('pwa-install-popup').style.display = 'block', 3000); });
+        window.installPWA = async () => { if(deferredPrompt) { deferredPrompt.prompt(); const {outcome} = await deferredPrompt.userChoice; if(outcome==='accepted') document.getElementById('pwa-install-popup').style.display = 'none'; deferredPrompt=null; }};
+        window.dismissPWA = () => document.getElementById('pwa-install-popup').style.display = 'none';
+        if("serviceWorker" in navigator) navigator.serviceWorker.register("./service-worker.js").catch(()=>{});
+
+    </script>
+</body>
+</html>

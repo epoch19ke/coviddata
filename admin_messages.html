@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Admin Console | Epoch19</title>
+    
+    <!-- PWA & Meta -->
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" type="image/svg+xml" href="./assets/images/favicon.svg">
+    <meta name="theme-color" content="#1e293b">
+    
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@800&family=Playfair+Display:ital,wght@0,600;1,600&family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+
+    <style>
+        :root {
+            --bg-body: #0f172a;       
+            --bg-glass: rgba(30, 41, 59, 0.95);
+            --text-main: #F1F5F9;     
+            --text-muted: #94A3B8; 
+            
+            /* Admin Theme: Red/Purple hybrid for authority */
+            --primary-base: #7C3AED; 
+            --primary-gradient: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%);
+            --danger: #EF4444;
+            --success: #10B981;
+            
+            --radius: 12px;
+            --font-body: 'Inter', sans-serif;
+            --font-mono: 'Space Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            font-family: var(--font-body); 
+            background-color: var(--bg-body); 
+            background: url('./assets/images/background.png') no-repeat center center fixed;
+            background-size: cover;
+            color: var(--text-main); 
+            min-height: 100vh; 
+            overflow-x: hidden;
+        }
+
+        /* --- LAYOUT --- */
+        .admin-wrapper {
+            max-width: 1200px; margin: 0 auto; padding: 40px 20px;
+        }
+
+        header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;
+            padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .admin-title { font-family: 'Space Grotesk', sans-serif; font-size: 1.8rem; font-weight: 700; display: flex; align-items: center; gap: 15px; }
+        .admin-badge { background: var(--danger); font-size: 0.7rem; padding: 4px 8px; border-radius: 4px; vertical-align: middle; }
+
+        .btn-back { color: var(--text-muted); text-decoration: none; display: flex; align-items: center; gap: 8px; font-weight: 500; transition: 0.3s; }
+        .btn-back:hover { color: #fff; transform: translateX(-5px); }
+
+        /* --- MESSAGES GRID --- */
+        .messages-container {
+            display: grid; gap: 20px;
+        }
+
+        .msg-card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: var(--radius);
+            padding: 25px;
+            position: relative;
+            transition: 0.3s;
+            animation: slideUp 0.5s ease forwards;
+        }
+        .msg-card:hover { border-color: var(--primary-base); background: rgba(30, 41, 59, 0.8); }
+
+        .msg-header { display: flex; justify-content: space-between; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
+        
+        .sender-info { display: flex; align-items: center; gap: 12px; }
+        .sender-avatar { width: 40px; height: 40px; background: var(--primary-gradient); border-radius: 50%; display: grid; place-items: center; font-weight: 700; }
+        .sender-details h4 { font-size: 1rem; color: #fff; margin-bottom: 2px; }
+        .sender-details span { font-size: 0.85rem; color: var(--primary-base); font-family: var(--font-mono); }
+
+        .msg-meta { text-align: right; }
+        .msg-time { font-size: 0.8rem; color: var(--text-muted); display: block; }
+        .msg-status { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; margin-top: 5px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+        .status-unread { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.4); }
+        .status-read { background: rgba(16, 185, 129, 0.2); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.4); }
+
+        .msg-subject { font-weight: 700; margin-bottom: 10px; color: #fff; font-size: 1.1rem; }
+        .msg-body { color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; white-space: pre-wrap; margin-bottom: 20px; }
+
+        .msg-actions { display: flex; gap: 10px; justify-content: flex-end; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px; }
+        .action-btn { 
+            padding: 8px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); 
+            background: rgba(255,255,255,0.05); color: var(--text-muted); cursor: pointer; 
+            font-size: 0.85rem; display: flex; align-items: center; gap: 6px; transition: 0.2s;
+        }
+        .action-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+        .btn-reply:hover { border-color: var(--primary-base); color: var(--primary-base); }
+        .btn-delete:hover { border-color: var(--danger); color: var(--danger); }
+
+        .empty-state { text-align: center; padding: 60px; color: var(--text-muted); }
+        .empty-state i { font-size: 3rem; margin-bottom: 15px; opacity: 0.5; }
+
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .loading-spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid #fff; border-radius: 50%; border-top-color: transparent; animation: spin 1s infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="admin-wrapper">
+        <header>
+            <div class="admin-title">
+                <i class="fa-solid fa-satellite-dish"></i> TRANSMISSIONS
+                <span class="admin-badge">ADMIN</span>
+            </div>
+            <a href="admin-dashboard.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Dashboard</a>
+        </header>
+
+        <!-- Stats / Filter Bar -->
+        <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+            <div style="color:var(--text-muted); font-size:0.9rem;">Total Messages: <span id="msg-count" style="color:#fff; font-weight:700;">Loading...</span></div>
+            <button onclick="loadMessages()" style="background:transparent; border:none; color:var(--primary-base); cursor:pointer; font-size:0.9rem;"><i class="fa-solid fa-rotate"></i> Refresh</button>
+        </div>
+
+        <div id="messages-list" class="messages-container">
+            <!-- Messages injected via JS -->
+            <div style="text-align:center; padding:40px;"><span class="loading-spinner" style="width:30px; height:30px;"></span></div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script type="module">
+        import { auth, db } from './firebase-config.js';
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+        import { collection, query, orderBy, getDocs, doc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+
+        // 1. Auth & Admin Check
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Optional: Check if user is actually an admin
+            // For now, we assume logged-in users can view (modify this logic for strict security)
+            /* 
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+            if (!userDoc.data().isAdmin) { 
+                alert("Access Denied"); window.location.href = 'dashboard.html'; 
+            }
+            */
+
+            loadMessages();
+        });
+
+        // 2. Load Messages
+        window.loadMessages = async () => {
+            const container = document.getElementById('messages-list');
+            const countSpan = document.getElementById('msg-count');
+            
+            container.innerHTML = `<div style="text-align:center; padding:40px;"><span class="loading-spinner" style="width:30px; height:30px;"></span></div>`;
+
+            try {
+                const q = query(collection(db, "contact_messages"), orderBy("createdAt", "desc"));
+                const querySnapshot = await getDocs(q);
+                
+                countSpan.innerText = querySnapshot.size;
+                container.innerHTML = ""; // Clear loader
+
+                if (querySnapshot.empty) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fa-regular fa-folder-open"></i>
+                            <p>No transmissions received yet.</p>
+                        </div>`;
+                    return;
+                }
+
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const id = doc.id;
+                    const date = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleString() : 'Unknown Date';
+                    const initials = data.name ? data.name.charAt(0).toUpperCase() : '?';
+                    const statusClass = data.status === 'read' ? 'status-read' : 'status-unread';
+                    const statusText = data.status === 'read' ? 'READ' : 'NEW';
+
+                    const html = `
+                        <div class="msg-card" id="card-${id}">
+                            <div class="msg-header">
+                                <div class="sender-info">
+                                    <div class="sender-avatar">${initials}</div>
+                                    <div class="sender-details">
+                                        <h4>${data.name}</h4>
+                                        <span>${data.email}</span>
+                                    </div>
+                                </div>
+                                <div class="msg-meta">
+                                    <span class="msg-time">${date}</span>
+                                    <span class="msg-status ${statusClass}" id="status-${id}">${statusText}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="msg-subject">Subject: ${data.subject}</div>
+                            <div class="msg-body">${data.message}</div>
+
+                            <div class="msg-actions">
+                                <button class="action-btn" onclick="markAsRead('${id}')">
+                                    <i class="fa-solid fa-check-double"></i> Mark Read
+                                </button>
+                                <a href="mailto:${data.email}?subject=Re: ${data.subject}" class="action-btn btn-reply">
+                                    <i class="fa-solid fa-reply"></i> Reply
+                                </a>
+                                <button class="action-btn btn-delete" onclick="deleteMessage('${id}')">
+                                    <i class="fa-solid fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', html);
+                });
+
+            } catch (error) {
+                console.error(error);
+                container.innerHTML = `<div style="text-align:center; color:#EF4444;">Error loading transmissions.</div>`;
+            }
+        };
+
+        // 3. Mark as Read
+        window.markAsRead = async (id) => {
+            try {
+                const msgRef = doc(db, "contact_messages", id);
+                await updateDoc(msgRef, { status: "read" });
+                
+                // Update UI immediately
+                const badge = document.getElementById(`status-${id}`);
+                badge.className = "msg-status status-read";
+                badge.innerText = "READ";
+                
+                Toastify({ text: "Marked as read", duration: 2000, style: { background: "#10B981" } }).showToast();
+            } catch (error) {
+                console.error(error);
+            }
+        };
+
+        // 4. Delete Message
+        window.deleteMessage = async (id) => {
+            if(!confirm("Are you sure you want to delete this transmission?")) return;
+
+            try {
+                await deleteDoc(doc(db, "contact_messages", id));
+                
+                // Remove UI element
+                const card = document.getElementById(`card-${id}`);
+                card.style.opacity = '0';
+                setTimeout(() => card.remove(), 300);
+                
+                // Update count
+                const countSpan = document.getElementById('msg-count');
+                countSpan.innerText = parseInt(countSpan.innerText) - 1;
+
+                Toastify({ text: "Transmission deleted", duration: 2000, style: { background: "#EF4444" } }).showToast();
+            } catch (error) {
+                console.error(error);
+                alert("Failed to delete.");
+            }
+        };
+
+    </script>
+</body>
+</html>
