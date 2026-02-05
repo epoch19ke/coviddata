@@ -279,6 +279,28 @@
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
         
+        /* EXPORT MODAL STYLES */
+        .modal-backdrop {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 2000;
+            display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px);
+        }
+        .export-modal {
+            background: #1e293b; border: 1px solid rgba(255,255,255,0.1);
+            width: 90%; max-width: 500px; padding: 2rem; border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            display: flex; flex-direction: column; gap: 1.5rem;
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .modal-title { font-family: var(--font-display); font-size: 1.25rem; color: #fff; margin-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+        .export-form-group { display: flex; flex-direction: column; gap: 8px; }
+        .export-form-group label { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
+        .export-btn-row { display: flex; gap: 10px; margin-top: 10px; }
+        .btn-cancel { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #fff; flex: 1; padding: 12px; border-radius: 10px; cursor: pointer; transition: 0.2s; }
+        .btn-confirm { background: var(--primary-gradient); border: none; color: #fff; flex: 2; padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.2s; box-shadow: 0 5px 15px rgba(124, 58, 237, 0.3); }
+        .btn-confirm:hover { transform: translateY(-2px); }
+
         footer { margin-top: auto; border-top: 1px solid rgba(255,255,255,0.05); padding: 2.5rem; text-align: center; }
         .footer-socials { display: flex; gap: 20px; justify-content: center; margin-bottom: 1rem; }
         .footer-socials a { color: var(--text-muted); font-size: 1.5rem; transition: 0.3s; }
@@ -296,6 +318,43 @@
     <div id="global-loader" class="loader-overlay">
         <div class="spinner-ring"></div>
         <div style="margin-top: 15px; font-family: 'Space Mono', monospace; color: #A78BFA; letter-spacing: 2px;">SYNCING ARCHIVE...</div>
+    </div>
+
+    <!-- EXPORT MODAL -->
+    <div class="modal-backdrop" id="export-modal-backdrop">
+        <div class="export-modal">
+            <div class="modal-title"><i class="fa-solid fa-file-pdf"></i> Generate PDF Report</div>
+            
+            <div class="export-form-group">
+                <label>Filter by Date Range (Optional)</label>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" class="filter-input" id="pdf-start" placeholder="Start (DD/MM/YYYY)">
+                    <input type="text" class="filter-input" id="pdf-end" placeholder="End (DD/MM/YYYY)">
+                </div>
+            </div>
+
+            <div class="export-form-group">
+                <label>Filter by Country (Optional)</label>
+                <select class="filter-select" id="pdf-country">
+                    <option value="">All Countries</option>
+                </select>
+            </div>
+
+            <div class="export-form-group">
+                <label>Sort Data By</label>
+                <select class="filter-select" id="pdf-sort">
+                    <option value="Date-Desc">Date (Newest First)</option>
+                    <option value="Deaths-Desc">Deaths (High to Low)</option>
+                    <option value="Cases-Desc">Cases (High to Low)</option>
+                    <option value="Serious-Desc">Serious Cases (High to Low)</option>
+                </select>
+            </div>
+
+            <div class="export-btn-row">
+                <button class="btn-cancel" onclick="closeExportModal()">Cancel</button>
+                <button class="btn-confirm" onclick="generateFinalPDF()"><i class="fa-solid fa-download"></i> Download Report</button>
+            </div>
+        </div>
     </div>
 
     <!-- HEADER -->
@@ -367,7 +426,8 @@
                     <div style="font-size: 0.8rem; color: #fff; font-weight: 600; background: rgba(239,68,68,0.1); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(239,68,68,0.3);">
                         <span class="live-dot"></span> LIVE SYNC
                     </div>
-                    <button class="btn-tool btn-hidden" id="btn-export-pdf"><i class="fa-solid fa-file-pdf"></i> PDF Report</button>
+                    <!-- Updated to call openExportModal -->
+                    <button class="btn-tool btn-hidden" id="btn-export-pdf" onclick="openExportModal()"><i class="fa-solid fa-file-pdf"></i> PDF Report</button>
                     <button class="btn-tool btn-hidden" id="btn-export-csv"><i class="fa-solid fa-file-csv"></i> CSV Export</button>
                     <button class="btn-tool btn-hidden" id="btn-reset-filters"><i class="fa-solid fa-rotate-left"></i> Reset</button>
                 </div>
@@ -461,15 +521,42 @@
         let sortDir = 1;
         let unsubscribe = null; 
 
-        // --- COMPREHENSIVE COUNTRY MAP (Flag Fix) ---
-        const countryToISO = {
-            "afghanistan":"af","albania":"al","algeria":"dz","andorra":"ad","angola":"ao","argentina":"ar","armenia":"am","australia":"au","austria":"at","azerbaijan":"az","bahamas":"bs","bahrain":"bh","bangladesh":"bd","barbados":"bb","belarus":"by","belgium":"be","belize":"bz","benin":"bj","bhutan":"bt","bolivia":"bo","bosnia":"ba","botswana":"bw","brazil":"br","brunei":"bn","bulgaria":"bg","burkina faso":"bf","burundi":"bi","cambodia":"kh","cameroon":"cm","canada":"ca","cape verde":"cv","chad":"td","chile":"cl","china":"cn","colombia":"co","comoros":"km","congo":"cg","costa rica":"cr","croatia":"hr","cuba":"cu","cyprus":"cy","czech republic":"cz","denmark":"dk","djibouti":"dj","dominica":"dm","dominican republic":"do","ecuador":"ec","egypt":"eg","el salvador":"sv","equatorial guinea":"gq","eritrea":"er","estonia":"ee","ethiopia":"et","fiji":"fj","finland":"fi","france":"fr","gabon":"ga","gambia":"gm","georgia":"ge","germany":"de","ghana":"gh","greece":"gr","grenada":"gd","guatemala":"gt","guinea":"gn","guyana":"gy","haiti":"ht","honduras":"hn","hungary":"hu","iceland":"is","india":"in","indonesia":"id","iran":"ir","iraq":"iq","ireland":"ie","israel":"il","italy":"it","jamaica":"jm","japan":"jp","jordan":"jo","kazakhstan":"kz","kenya":"ke","kiribati":"ki","kuwait":"kw","kyrgyzstan":"kg","laos":"la","latvia":"lv","lebanon":"lb","lesotho":"ls","liberia":"lr","libya":"ly","liechtenstein":"li","lithuania":"lt","luxembourg":"lu","madagascar":"mg","malawi":"mw","malaysia":"my","maldives":"mv","mali":"ml","malta":"mt","marshall islands":"mh","mauritania":"mr","mauritius":"mu","mexico":"mx","micronesia":"fm","moldova":"md","monaco":"mc","mongolia":"mn","montenegro":"me","morocco":"ma","mozambique":"mz","myanmar":"mm","namibia":"na","nauru":"nr","nepal":"np","netherlands":"nl","new zealand":"nz","nicaragua":"ni","niger":"ne","nigeria":"ng","north macedonia":"mk","norway":"no","oman":"om","pakistan":"pk","palau":"pw","panama":"pa","papua new guinea":"pg","paraguay":"py","peru":"pe","philippines":"ph","poland":"pl","portugal":"pt","qatar":"qa","romania":"ro","russia":"ru","rwanda":"rw","saint kitts":"kn","saint lucia":"lc","saint vincent":"vc","samoa":"ws","san marino":"sm","saudi arabia":"sa","senegal":"sn","serbia":"rs","seychelles":"sc","sierra leone":"sl","singapore":"sg","slovakia":"sk","slovenia":"si","solomon islands":"sb","somalia":"so","south africa":"za","south korea":"kr","s. korea":"kr","south sudan":"ss","spain":"es","sri lanka":"lk","sudan":"sd","suriname":"sr","sweden":"se","switzerland":"ch","syria":"sy","taiwan":"tw","tajikistan":"tj","tanzania":"tz","thailand":"th","timor-leste":"tl","togo":"tg","tonga":"to","trinidad":"tt","tunisia":"tn","turkey":"tr","turkmenistan":"tm","tuvalu":"tv","uganda":"ug","ukraine":"ua","uae":"ae","united arab emirates":"ae","uk":"gb","united kingdom":"gb","usa":"us","united states":"us","uruguay":"uy","uzbekistan":"uz","vanuatu":"vu","vatican":"va","venezuela":"ve","vietnam":"vn","yemen":"ye","zambia":"zm","zimbabwe":"zw"
+        // --- INTELLIGENT FLAG MAP (Fuzzy Matcher) ---
+        // Maps normalized lower-case country names to ISO codes
+        const countryMap = {
+            "usa":"us","unitedstates":"us","unitedstatesofamerica":"us","america":"us",
+            "uk":"gb","unitedkingdom":"gb","britain":"gb","england":"gb",
+            "uae":"ae","unitedarabemirates":"ae",
+            "southkorea":"kr","korea":"kr","skorea":"kr","republicofkorea":"kr",
+            "northkorea":"kp","dprk":"kp",
+            "russia":"ru","russianfederation":"ru",
+            "vietnam":"vn","viet nam":"vn",
+            "laos":"la","laopdr":"la",
+            "china":"cn","prc":"cn",
+            // ... standard list ...
+            "afghanistan":"af","albania":"al","algeria":"dz","andorra":"ad","angola":"ao","argentina":"ar","armenia":"am","australia":"au","austria":"at","azerbaijan":"az",
+            "bahamas":"bs","bahrain":"bh","bangladesh":"bd","barbados":"bb","belarus":"by","belgium":"be","belize":"bz","benin":"bj","bhutan":"bt","bolivia":"bo","bosnia":"ba",
+            "botswana":"bw","brazil":"br","brunei":"bn","bulgaria":"bg","burkinafaso":"bf","burundi":"bi","cambodia":"kh","cameroon":"cm","canada":"ca","capeverde":"cv",
+            "chad":"td","chile":"cl","colombia":"co","comoros":"km","congo":"cg","costarica":"cr","croatia":"hr","cuba":"cu","cyprus":"cy","czechrepublic":"cz","czechia":"cz",
+            "denmark":"dk","djibouti":"dj","dominica":"dm","dominicanrepublic":"do","ecuador":"ec","egypt":"eg","elsalvador":"sv","equatorialguinea":"gq","eritrea":"er",
+            "estonia":"ee","ethiopia":"et","fiji":"fj","finland":"fi","france":"fr","gabon":"ga","gambia":"gm","georgia":"ge","germany":"de","ghana":"gh","greece":"gr",
+            "grenada":"gd","guatemala":"gt","guinea":"gn","guyana":"gy","haiti":"ht","honduras":"hn","hungary":"hu","iceland":"is","india":"in","indonesia":"id","iran":"ir",
+            "iraq":"iq","ireland":"ie","israel":"il","italy":"it","jamaica":"jm","japan":"jp","jordan":"jo","kazakhstan":"kz","kenya":"ke","kiribati":"ki","kuwait":"kw",
+            "kyrgyzstan":"kg","latvia":"lv","lebanon":"lb","lesotho":"ls","liberia":"lr","libya":"ly","liechtenstein":"li","lithuania":"lt","luxembourg":"lu","madagascar":"mg",
+            "malawi":"mw","malaysia":"my","maldives":"mv","mali":"ml","malta":"mt","mauritania":"mr","mauritius":"mu","mexico":"mx","moldova":"md","monaco":"mc","mongolia":"mn",
+            "montenegro":"me","morocco":"ma","mozambique":"mz","myanmar":"mm","namibia":"na","nauru":"nr","nepal":"np","netherlands":"nl","newzealand":"nz","nicaragua":"ni",
+            "niger":"ne","nigeria":"ng","norway":"no","oman":"om","pakistan":"pk","palau":"pw","panama":"pa","papua":"pg","paraguay":"py","peru":"pe","philippines":"ph",
+            "poland":"pl","portugal":"pt","qatar":"qa","romania":"ro","rwanda":"rw","samoa":"ws","sanmarino":"sm","saudiarabia":"sa","senegal":"sn","serbia":"rs","seychelles":"sc",
+            "sierraleone":"sl","singapore":"sg","slovakia":"sk","slovenia":"si","somalia":"so","southafrica":"za","spain":"es","srilanka":"lk","sudan":"sd","suriname":"sr",
+            "sweden":"se","switzerland":"ch","syria":"sy","taiwan":"tw","tajikistan":"tj","tanzania":"tz","thailand":"th","togo":"tg","tonga":"to","trinidad":"tt","tunisia":"tn",
+            "turkey":"tr","turkmenistan":"tm","tuvalu":"tv","uganda":"ug","ukraine":"ua","uruguay":"uy","uzbekistan":"uz","vanuatu":"vu","vatican":"va","venezuela":"ve","yemen":"ye","zambia":"zm","zimbabwe":"zw"
         };
 
         function getFlag(name) {
             if(!name) return './assets/images/favicon.svg';
-            const clean = name.toLowerCase().trim();
-            const code = countryToISO[clean];
+            // Normalize: lowercase, remove spaces, dots, dashes
+            const clean = name.toLowerCase().replace(/[^a-z]/g, ''); 
+            const code = countryMap[clean];
             return code ? `https://flagcdn.com/24x18/${code}.png` : './assets/images/favicon.svg';
         }
 
@@ -477,6 +564,15 @@
         window.toggleSidebar = () => { document.getElementById('sidebar').classList.toggle('active'); document.getElementById('overlay').style.display = 'block'; };
         window.closeSidebar = () => { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').style.display = 'none'; };
         window.logout = () => signOut(auth).then(() => window.location.href = "index.html");
+
+        // EXPORT MODAL HELPERS
+        window.openExportModal = () => {
+            if(!isPremium) return Swal.fire({icon: 'warning', title: 'Premium Feature', text: 'Upgrade to export reports.', background:'#0f172a', color:'#fff'});
+            document.getElementById('export-modal-backdrop').style.display = 'flex';
+        };
+        window.closeExportModal = () => {
+            document.getElementById('export-modal-backdrop').style.display = 'none';
+        };
 
         // 1. Auth & Init
         onAuthStateChanged(auth, async (user) => {
@@ -520,7 +616,7 @@
                 const inputs = document.querySelectorAll('.filter-input, .search-input, .filter-select');
                 inputs.forEach(i => i.addEventListener('input', () => { currentPage = 1; applyFilters(); }));
                 
-                els.btnPdf.addEventListener('click', exportPDF);
+                // Note: PDF button listener is handled via inline onclick="openExportModal()" in HTML
                 els.btnCsv.addEventListener('click', exportCSV);
                 els.btnReset.addEventListener('click', resetFilters);
                 
@@ -550,14 +646,19 @@
                         if(item.Country) countrySet.add(item.Country);
                     });
 
+                    // Populate Country Dropdowns (Table & PDF Modal)
                     if(isPremium) {
-                        const sel = document.getElementById('filter-country');
-                        sel.innerHTML = '<option value="">All Countries</option>'; 
-                        Array.from(countrySet).sort().forEach(c => {
-                            const opt = document.createElement('option');
-                            opt.value = c; opt.innerText = c;
-                            sel.appendChild(opt);
-                        });
+                        const populateSelect = (id) => {
+                            const sel = document.getElementById(id);
+                            sel.innerHTML = '<option value="">All Countries</option>'; 
+                            Array.from(countrySet).sort().forEach(c => {
+                                const opt = document.createElement('option');
+                                opt.value = c; opt.innerText = c;
+                                sel.appendChild(opt);
+                            });
+                        };
+                        populateSelect('filter-country'); // Main Filter
+                        populateSelect('pdf-country');    // Modal Filter
                     }
 
                     displayData = [...allData];
@@ -680,34 +781,59 @@
         function changePage(delta) { currentPage += delta; renderTable(); }
         function resetFilters() { document.querySelectorAll('input, select').forEach(el => el.value = ''); currentPage = 1; applyFilters(); }
 
-        // --- ADVANCED PDF EXPORT ---
-        async function exportPDF() {
-            if (!isPremium) {
-                Swal.fire({icon: 'warning', title: 'Premium Feature', text: 'Upgrade to export professional reports.', background:'#0f172a', color:'#fff'});
-                return;
-            }
-            if(displayData.length === 0) return;
+        // --- 4. ADVANCED PDF GENERATION (WATERMARK & FILTERS) ---
+        window.generateFinalPDF = async () => {
+            const countryFilter = document.getElementById('pdf-country').value;
+            const dateStart = document.getElementById('pdf-start').value;
+            const dateEnd = document.getElementById('pdf-end').value;
+            const sortMode = document.getElementById('pdf-sort').value;
 
+            closeExportModal(); // Close modal immediately
+
+            // 1. Filter Data for PDF specifically
+            let pdfData = allData.filter(row => {
+                let pass = true;
+                if(countryFilter && row.Country !== countryFilter) pass = false;
+                
+                // Date Logic (Basic String compare for DD/MM/YYYY)
+                const parseD = d => { if(!d) return 0; const p=d.split('/'); return new Date(p[2],p[1]-1,p[0]).getTime(); };
+                const rowTime = parseD(row.Date);
+                if(dateStart && rowTime < parseD(dateStart)) pass = false;
+                if(dateEnd && rowTime > parseD(dateEnd)) pass = false;
+
+                return pass;
+            });
+
+            if(pdfData.length === 0) return Swal.fire({icon:'info', title:'No Data', text:'Filters resulted in empty report.', background:'#0f172a', color:'#fff'});
+
+            // 2. Sort Data
+            pdfData.sort((a,b) => {
+                const parseD = d => { if(!d) return 0; const p=d.split('/'); return new Date(p[2],p[1]-1,p[0]).getTime(); };
+                const val = (item, key) => Number(item[key])||0;
+
+                if(sortMode === 'Date-Desc') return parseD(b.Date) - parseD(a.Date);
+                if(sortMode === 'Deaths-Desc') return val(b,'Deaths') - val(a,'Deaths');
+                if(sortMode === 'Cases-Desc') return val(b,'Cases') - val(a,'Cases');
+                if(sortMode === 'Serious-Desc') return val(b,'Serious') - val(a,'Serious');
+                return 0;
+            });
+
+            // 3. Generate PDF
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             const pageWidth = doc.internal.pageSize.getWidth();
             const pageHeight = doc.internal.pageSize.getHeight();
 
-            // 1. Force Sort by Date (Desc) for Report
-            const reportData = [...displayData].sort((a,b) => {
-                const da = a.Date.split('/'); const db = b.Date.split('/');
-                return new Date(db[2],db[1]-1,db[0]) - new Date(da[2],da[1]-1,da[0]);
-            });
+            // Load Logo
+            let logoImg = null;
+            try { logoImg = await loadImage('./assets/images/logo.png'); } catch(e){}
 
-            // 2. Header
-            try {
-                const img = await loadImage('./assets/images/logo.png');
-                doc.addImage(img, 'PNG', 14, 10, 18, 18);
-            } catch(e){}
-
+            // -- HEADER --
+            if(logoImg) doc.addImage(logoImg, 'PNG', 14, 10, 18, 18);
+            
             doc.setFont("helvetica", "bold");
             doc.setFontSize(22);
-            doc.setTextColor(124, 58, 237); // Primary Purple
+            doc.setTextColor(124, 58, 237); // Purple
             doc.text("EPOCH19", 36, 18);
             
             doc.setFontSize(10);
@@ -716,21 +842,30 @@
             doc.text("OFFICIAL PANDEMIC ARCHIVE", 36, 24);
 
             doc.setFontSize(9);
-            doc.text(`Generated By: ${currentUserFullName}`, pageWidth - 15, 18, { align: 'right' });
+            // Removed "Generated By" as requested
             doc.text(`Date: ${new Date().toLocaleDateString()}`, pageWidth - 15, 23, { align: 'right' });
 
-            // 3. Table
+            // -- WATERMARK & TABLE --
             doc.autoTable({
                 head: [["Date", "Country", "Cases", "Deaths", "Recovered", "Serious"]],
-                body: reportData.map(r => [r.Date, r.Country, r.Cases, r.Deaths, r.Recovered, r.Serious]),
+                body: pdfData.map(r => [r.Date, r.Country, r.Cases, r.Deaths, r.Recovered, r.Serious]),
                 startY: 35,
                 theme: 'grid',
                 headStyles: { fillColor: [15, 23, 42], textColor: 255, lineColor: [124, 58, 237], lineWidth: 0.1 },
                 styles: { fontSize: 9, cellPadding: 3 },
                 alternateRowStyles: { fillColor: [245, 247, 250] },
                 
-                // Footer Hook
+                // HOOK: Draw Watermark on every page
                 didDrawPage: (data) => {
+                    if(logoImg) {
+                        doc.saveGraphicsState();
+                        doc.setGState(new doc.GState({ opacity: 0.05 })); // Low opacity watermark
+                        const imgDim = 80; 
+                        doc.addImage(logoImg, 'PNG', (pageWidth/2)-(imgDim/2), (pageHeight/2)-(imgDim/2), imgDim, imgDim);
+                        doc.restoreGraphicsState();
+                    }
+
+                    // Footer
                     const pageCount = doc.internal.getNumberOfPages();
                     doc.setFontSize(8);
                     doc.setTextColor(150);
@@ -740,7 +875,7 @@
             });
 
             doc.save(`Epoch19_Report_${new Date().toISOString().slice(0,10)}.pdf`);
-        }
+        };
 
         function loadImage(src) {
             return new Promise((res, rej) => {
